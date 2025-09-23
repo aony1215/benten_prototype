@@ -1,5 +1,8 @@
 'use client'
+
 import Link from 'next/link'
+import { useMemo } from 'react'
+
 import { Shell } from '@/components/Shell'
 import { useCurrentView } from '@/components/ViewSwitch'
 
@@ -11,6 +14,21 @@ type Project = {
   owner: string
   customer: ProjectEntity
   brand: ProjectEntity
+}
+
+type ProjectGroup = {
+  id: string
+  label: string
+  href: string
+  projects: Project[]
+}
+
+type GroupConfig = {
+  grouping: keyof Pick<Project, 'customer' | 'brand'>
+  groupLabel: string
+  secondaryLabel: string
+  getGroupHref: (entity: ProjectEntity) => string
+  getSecondaryName: (project: Project) => string
 }
 
 const PROJECTS: Project[] = [
@@ -44,31 +62,47 @@ const PROJECTS: Project[] = [
   },
 ]
 
+const VIEW_CONFIG: Record<'customer' | 'brand', GroupConfig> = {
+  customer: {
+    grouping: 'customer',
+    groupLabel: '顧客',
+    secondaryLabel: 'ブランド',
+    getGroupHref: entity => `/customers/${entity.id}`,
+    getSecondaryName: project => project.brand.name,
+  },
+  brand: {
+    grouping: 'brand',
+    groupLabel: 'ブランド',
+    secondaryLabel: '顧客',
+    getGroupHref: entity => `/brands/${entity.id}`,
+    getSecondaryName: project => project.customer.name,
+  },
+}
+
 export default function MyProjects() {
   const view = useCurrentView()
-  const grouping = view === 'brand' ? 'brand' : 'customer'
+  const displayView = view === 'brand' ? 'brand' : 'customer'
+  const config = VIEW_CONFIG[displayView]
 
-  const groupLabel = grouping === 'brand' ? 'ブランド' : '顧客'
-  const groups = Object.values(
-    PROJECTS.reduce(
-      (acc, project) => {
-        const entity = project[grouping]
-        if (!entity) return acc
-        const key = entity.id
-        if (!acc[key]) {
-          acc[key] = {
-            id: key,
-            label: entity.name,
-            href: grouping === 'brand' ? `/brands/${entity.id}` : `/customers/${entity.id}`,
-            projects: [] as Project[],
-          }
+  const groups = useMemo<ProjectGroup[]>(() => {
+    const grouped: Record<string, ProjectGroup> = {}
+    PROJECTS.forEach(project => {
+      const entity = project[config.grouping]
+      if (!entity) {
+        return
+      }
+      if (!grouped[entity.id]) {
+        grouped[entity.id] = {
+          id: entity.id,
+          label: entity.name,
+          href: config.getGroupHref(entity),
+          projects: [],
         }
-        acc[key].projects.push(project)
-        return acc
-      },
-      {} as Record<string, { id: string; label: string; href: string; projects: Project[] }>,
-    ),
-  ).sort((a, b) => a.label.localeCompare(b.label, 'ja'))
+      }
+      grouped[entity.id].projects.push(project)
+    })
+    return Object.values(grouped).sort((a, b) => a.label.localeCompare(b.label, 'ja'))
+  }, [config])
 
   return (
     <Shell crumbs={[{ href: '/projects/my', label: 'Myプロジェクト' }]}>
@@ -77,7 +111,7 @@ export default function MyProjects() {
           <div key={group.id} className="card p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs font-medium uppercase tracking-wide text-slate-500">{groupLabel}</div>
+                <div className="text-xs font-medium uppercase tracking-wide text-slate-500">{config.groupLabel}</div>
                 <Link href={group.href} className="text-lg font-semibold text-slate-900 hover:text-indigo-600">
                   {group.label}
                 </Link>
@@ -95,8 +129,9 @@ export default function MyProjects() {
                     <div className="font-medium text-slate-900">{project.name}</div>
                     <div className="text-xs text-slate-500">担当: {project.owner}</div>
                   </div>
-                  <div className="text-xs text-slate-500">
-                    {grouping === 'brand' ? project.customer.name : project.brand.name}
+                  <div className="text-xs text-slate-500 text-right">
+                    <div>{config.secondaryLabel}</div>
+                    <div className="font-medium text-slate-600">{config.getSecondaryName(project)}</div>
                   </div>
                 </Link>
               ))}
