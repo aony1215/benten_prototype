@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { Shell } from '@/components/Shell'
 import { CTA } from '@/components/ui/CTA'
+import { ChevronRight } from 'lucide-react'
 
 // Demo data
 const DATA: Record<string, any> = {
@@ -77,7 +78,14 @@ export default function CustomerDetail({ params }: { params: { id: string } }) {
         <div className="font-semibold">関連プロジェクト</div>
         <div className="mt-2 grid gap-2">
           {c.projects.map((p: any) => (
-            <Link key={p.id} href={`/projects/${p.id}`} className="px-3 py-2 rounded-xl border border-slate-300 hover:bg-slate-50 text-sm">{p.name}</Link>
+            <Link
+              key={p.id}
+              href={`/projects/${p.id}`}
+              className="group flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition-all duration-150 hover:-translate-y-0.5 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200"
+            >
+              <span>{p.name}</span>
+              <ChevronRight className="h-4 w-4 text-slate-400 transition-colors duration-150 group-hover:text-indigo-500" aria-hidden="true" />
+            </Link>
           ))}
         </div>
       </div>
