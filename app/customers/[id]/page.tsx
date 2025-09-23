@@ -17,7 +17,10 @@ const DATA: Record<string, any> = {
     kpi: { cpa: 8400, roas: 1.6, progress: 0.42 },
     contract: { budget: 1500000, consumed: 380000 },
     issues: ['CV計測差分（MAとGAのズレ）'],
-    projects: [{ id:'prj_y', name:'ブランド新規獲得強化' }]
+    projects: [
+      { id: 'prj_y', name: 'ブランド新規獲得強化' },
+      { id: 'prj_launch', name: '新商品ローンチ支援' },
+    ],
   }
 }
 

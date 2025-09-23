@@ -5,6 +5,7 @@ import { Shell } from '@/components/Shell'
 const brands = [
   { id: 'brd_shoestore', name: 'ShoeStore', account: 'Global Retail Inc.' },
   { id: 'brd_gadgets', name: 'Gadgets+', account: 'Global Retail Inc.' },
+  { id: 'brd_futuretech', name: 'FutureTech Gear', account: 'Tech Starter' },
 ]
 
 export default function Brands() {
