@@ -112,7 +112,10 @@ export default function MyProjects() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xs font-medium uppercase tracking-wide text-slate-500">{config.groupLabel}</div>
-                <Link href={group.href} className="text-lg font-semibold text-slate-900 hover:text-indigo-600">
+                <Link
+                  href={group.href}
+                  className="text-lg font-semibold text-slate-900 transition-colors hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200"
+                >
                   {group.label}
                 </Link>
               </div>
@@ -123,7 +126,7 @@ export default function MyProjects() {
                 <Link
                   key={project.id}
                   href={`/projects/${project.id}`}
-                  className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2 text-sm transition hover:border-indigo-200 hover:bg-indigo-50"
+                  className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2 text-sm transition hover:-translate-y-0.5 hover:border-indigo-200 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200"
                 >
                   <div>
                     <div className="font-medium text-slate-900">{project.name}</div>

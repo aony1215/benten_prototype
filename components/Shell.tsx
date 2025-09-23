@@ -58,9 +58,27 @@ export function Shell({ children, crumbs }: { children: React.ReactNode; crumbs?
             const active = pathname.startsWith(it.href)
             return (
               <div key={it.href} className="mb-1">
-                <Link href={withView(it.href, sp)} className={clsx("flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100", active && "bg-indigo-50 text-indigo-700")}>
-                  <div className="p-2 rounded-xl bg-slate-100"><Icon className="w-4 h-4" /></div>
-                  <span className="font-medium">{it.label}</span>
+                <Link
+                  href={withView(it.href, sp)}
+                  aria-current={active ? 'page' : undefined}
+                  className={clsx(
+                    'group flex items-center gap-3 rounded-xl px-3 py-2 font-medium text-slate-600 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200',
+                    active
+                      ? 'bg-indigo-50 text-indigo-700 shadow-sm'
+                      : 'hover:bg-indigo-50/70 hover:text-indigo-700',
+                  )}
+                >
+                  <div
+                    className={clsx(
+                      'grid h-9 w-9 place-items-center rounded-xl transition-colors duration-150',
+                      active
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-slate-100 text-slate-600 group-hover:bg-indigo-100 group-hover:text-indigo-700',
+                    )}
+                  >
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <span>{it.label}</span>
                 </Link>
               </div>
             )
@@ -74,35 +92,47 @@ export function Shell({ children, crumbs }: { children: React.ReactNode; crumbs?
               <Link
                 key={it.href}
                 href={withView(it.href, sp)}
+                aria-current={active ? 'page' : undefined}
                 className={clsx(
-                  'flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-slate-100',
-                  active && 'bg-indigo-50 text-indigo-700',
+                  'group flex items-center gap-3 rounded-xl px-2 py-2 text-sm font-medium text-slate-600 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200',
+                  active
+                    ? 'bg-indigo-50 text-indigo-700 shadow-sm'
+                    : 'hover:bg-indigo-50/70 hover:text-indigo-700',
                 )}
               >
-                <div className="p-2 rounded-xl bg-slate-100">
+                <div
+                  className={clsx(
+                    'grid h-8 w-8 place-items-center rounded-xl transition-colors duration-150',
+                    active
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-slate-100 text-slate-600 group-hover:bg-indigo-100 group-hover:text-indigo-700',
+                  )}
+                >
                   <Icon className="w-4 h-4" />
                 </div>
-                <span className="font-medium text-sm">{it.label}</span>
+                <span>{it.label}</span>
               </Link>
             )
           })}
           <Link
             href={withView('/settings', sp)}
             className={clsx(
-              'flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-slate-100',
-              pathname.startsWith('/settings') && 'bg-indigo-50 text-indigo-700',
+              'group flex items-center gap-3 rounded-xl px-2 py-2 text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-indigo-50/70 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200',
+              pathname.startsWith('/settings') && 'bg-indigo-50 text-indigo-700 shadow-sm',
             )}
           >
             <div
               className={clsx(
-                'h-8 w-8 rounded-full grid place-items-center',
-                pathname.startsWith('/settings') ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200',
+                'grid h-8 w-8 place-items-center rounded-full transition-colors duration-150',
+                pathname.startsWith('/settings')
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-slate-200 text-slate-600 group-hover:bg-indigo-100 group-hover:text-indigo-700',
               )}
             >
               <User
                 className={clsx(
                   'w-4 h-4',
-                  pathname.startsWith('/settings') ? 'text-indigo-700' : 'text-slate-600',
+                  pathname.startsWith('/settings') ? 'text-white' : undefined,
                 )}
               />
             </div>
