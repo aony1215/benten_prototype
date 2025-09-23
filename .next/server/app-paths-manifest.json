@@ -1,0 +1,10 @@
+{
+  "/playbooks/page": "app/playbooks/page.js",
+  "/projects/my/page": "app/projects/my/page.js",
+  "/customers/page": "app/customers/page.js",
+  "/brands/page": "app/brands/page.js",
+  "/customers/new/page": "app/customers/new/page.js",
+  "/brands/[id]/page": "app/brands/[id]/page.js",
+  "/settings/page": "app/settings/page.js",
+  "/projects/[id]/page": "app/projects/[id]/page.js"
+}
