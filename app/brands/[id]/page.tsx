@@ -3,8 +3,9 @@ import { Shell } from '@/components/Shell'
 import { CTA } from '@/components/ui/CTA'
 
 const DATA: Record<string, any> = {
-  brd_shoestore: { name: 'ShoeStore', notes: ['CPAが目標より+12%','在庫更新が遅延'] },
+  brd_shoestore: { name: 'ShoeStore', notes: ['CPAが目標より+12%', '在庫更新が遅延'] },
   brd_gadgets: { name: 'Gadgets+', notes: ['CVタグの改修予定'] },
+  brd_futuretech: { name: 'FutureTech Gear', notes: ['新商品のローンチ準備', '在庫連携テスト進行中'] },
 }
 
 export default function BrandDetail({ params }: { params: { id: string } }) {
