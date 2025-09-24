@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Shell } from '@/components/Shell'
 import { CTA } from '@/components/ui/CTA'
 import { ChevronRight } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 // Demo data
 const DATA: Record<string, any> = {
@@ -31,6 +32,7 @@ function formatJPY(n: number) {
 
 export default function CustomerDetail({ params }: { params: { id: string } }) {
   const c = DATA[params.id] ?? { name: params.id, kpi:{}, contract:{}, issues:[], projects:[] }
+  const router = useRouter()
   const crumbs = [
     { href: '/customers', label: '顧客一覧' },
     { href: `/customers/${params.id}`, label: c.name },
@@ -69,7 +71,7 @@ export default function CustomerDetail({ params }: { params: { id: string } }) {
         <div className="font-semibold">アクション</div>
         <div className="mt-2 flex flex-wrap gap-2">
           <CTA onClick={() => alert('提案書最適化（デモ）')}>提案書最適化</CTA>
-          <CTA onClick={() => alert('レポーティング開始（デモ）')}>レポーティング開始</CTA>
+          <CTA onClick={() => router.push('/playbooks/reporting')}>レポーティング開始</CTA>
           <CTA variant="outline" onClick={() => alert('新プロジェクト作成（デモ）')}>新プロジェクト作成</CTA>
         </div>
       </div>
