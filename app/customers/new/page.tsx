@@ -24,6 +24,13 @@ const GOAL_OPTIONS = [
 
 type Candidate = { id: string; title: string; why: string; effect: string; tags?: string[] }
 
+const BASE_CANDIDATES: Candidate[] = [
+  { id: 'pb_reporting', title: '週次レポート自動化', why: '異常検知→是正案まで自動で提示。意思決定の速度を上げる。', effect: '運用時間 -40% / 可視化の即時性 ↑', tags: ['REPORTING'] },
+  { id: 'pb_scorecard', title: 'KPIスコアカード v1', why: '北極星＋3–4KPIに集約し、過度な粒度を避ける。', effect: '意思決定のフォーカス ↑ / 会議効率 ↑', tags: ['PLAN'] },
+  { id: 'pb_bidding', title: '入札最適化（Search）', why: 'CV重視に最適。学習リセットを避け、安定と効率の両立。', effect: 'ROAS +10–20% 期待', tags: ['ACQUISITION'] },
+  { id: 'pb_ma', title: 'MAオンボード（Nurturing）', why: 'オンボード→教育→比較→背中押しの型を適用。', effect: 'SQL転換率 ↑ / 解約率 ↓', tags: ['NURTURING'] },
+]
+
 function inferIndustryFromHost(host: string): string | null {
   const retailHints = ['shop', 'store', 'ec', 'cart']
   const saasHints = ['app', 'cloud', 'saas', 'io']
@@ -42,23 +49,16 @@ export default function NewCustomer() {
 
   const topGoal = goalOrder[0]
 
-  const base: Candidate[] = [
-    { id: 'pb_reporting', title: '週次レポート自動化', why: '異常検知→是正案まで自動で提示。意思決定の速度を上げる。', effect: '運用時間 -40% / 可視化の即時性 ↑', tags: ['REPORTING'] },
-    { id: 'pb_scorecard', title: 'KPIスコアカード v1', why: '北極星＋3–4KPIに集約し、過度な粒度を避ける。', effect: '意思決定のフォーカス ↑ / 会議効率 ↑', tags: ['PLAN'] },
-    { id: 'pb_bidding', title: '入札最適化（Search）', why: 'CV重視に最適。学習リセットを避け、安定と効率の両立。', effect: 'ROAS +10–20% 期待', tags: ['ACQUISITION'] },
-    { id: 'pb_ma', title: 'MAオンボード（Nurturing）', why: 'オンボード→教育→比較→背中押しの型を適用。', effect: 'SQL転換率 ↑ / 解約率 ↓', tags: ['NURTURING'] },
-  ]
-
   const candidates = useMemo(() => {
-    let ranked = [...base]
-    if (topGoal === 'cv') ranked = [base[2], base[0], base[1], base[3]]
-    else if (topGoal === 'reach') ranked = [base[1], base[0], base[3], base[2]]
+    let ranked = [...BASE_CANDIDATES]
+    if (topGoal === 'cv') ranked = [BASE_CANDIDATES[2], BASE_CANDIDATES[0], BASE_CANDIDATES[1], BASE_CANDIDATES[3]]
+    else if (topGoal === 'reach') ranked = [BASE_CANDIDATES[1], BASE_CANDIDATES[0], BASE_CANDIDATES[3], BASE_CANDIDATES[2]]
     const host = (() => { try { return new URL(info.website).hostname } catch { return '' } })()
     const inferred = host ? inferIndustryFromHost(host) : null
     const industry = (info.industry || inferred || '').toLowerCase()
-    if (method === 'url' && host) ranked = [base[0], ...ranked.filter(c => c.id !== 'pb_reporting')]
-    if (industry.includes('saas')) ranked = [base[3], base[1], base[0], base[2]]
-    else if (industry.includes('retail') || industry.includes('ec')) ranked = [base[2], base[0], base[1], base[3]]
+    if (method === 'url' && host) ranked = [BASE_CANDIDATES[0], ...ranked.filter(c => c.id !== 'pb_reporting')]
+    if (industry.includes('saas')) ranked = [BASE_CANDIDATES[3], BASE_CANDIDATES[1], BASE_CANDIDATES[0], BASE_CANDIDATES[2]]
+    else if (industry.includes('retail') || industry.includes('ec')) ranked = [BASE_CANDIDATES[2], BASE_CANDIDATES[0], BASE_CANDIDATES[1], BASE_CANDIDATES[3]]
     return ranked
   }, [topGoal, method, info.website, info.industry])
 

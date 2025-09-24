@@ -1,0 +1,33 @@
+id: pbk_report_insight_writer
+domain: reporting
+owner: "CoE-Reporting"
+versions:
+  - version: "0.1.0"
+    status: "approved"
+    spec:
+      required_data:
+        - name: "feat_web_ads_timeseries"
+          at: "bq://...@commit_*"
+        - name: "feat_channel_mix"
+        - name: "feat_kpi_baseline"
+      parameters:
+        tone: "concise-business"
+        max_blocks: 10
+        include_charts: true
+        highlight_change_drivers: true
+      actions:
+        - id: "write_insight"
+          inputs: ["state_id", "parameters"]
+          outputs: ["artifact:insight.md", "artifact:insight.json"]
+      guardrails:
+        - id: "no_pii"
+        - id: "forbid_unverified_claims"
+      stop_rules:
+        verifying_ttl_hours: 24
+        early_stop:
+          - "if CPA > target*1.2 for 2d then rollback"
+    tests:
+      - name: "baseline-regression"
+        expect:
+          blocks_min: 5
+          has_kpi_delta: true

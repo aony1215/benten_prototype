@@ -1,0 +1,75 @@
+.comment-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.comment-pin {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--color-accent, #2563eb);
+  color: var(--color-on-accent, #fff);
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 2px var(--surface, #fff);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.comment-thread-panel {
+  width: 320px;
+  background: var(--surface-elevated, #f8fafc);
+  border-left: 1px solid var(--border-subtle, #e2e8f0);
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-thread-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.comment-thread-item {
+  border: 1px solid var(--border-subtle, #e2e8f0);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  background: var(--surface, #fff);
+  margin-bottom: 0.75rem;
+}
+
+.comment-thread-item[aria-selected="true"] {
+  border-color: var(--color-accent, #2563eb);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent, #2563eb) 20%, transparent);
+}
+
+.comment-bubble {
+  position: absolute;
+  background: var(--surface, #fff);
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-subtle, #e2e8f0);
+  padding: 0.75rem;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.15);
+  pointer-events: auto;
+  min-width: 220px;
+}
+
+.comment-bubble button {
+  margin-right: 0.5rem;
+}
+
+.comment-filter {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--border-subtle, #e2e8f0);
+}
+
+.comment-filter button[aria-pressed="true"] {
+  background: var(--color-accent, #2563eb);
+  color: var(--color-on-accent, #fff);
+}
