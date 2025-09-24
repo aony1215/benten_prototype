@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Users2, Landmark, Layers, ChevronDown, Check } from 'lucide-react'
 
 const VIEWS = [
@@ -13,15 +13,31 @@ const VIEWS = [
 export type ViewId = typeof VIEWS[number]['id']
 
 export function useCurrentView(): ViewId {
+  const pathname = usePathname() || '/'
   const sp = useSearchParams()
-  const v = (sp?.get('v') || 'customer') as ViewId
-  return (['customer', 'brand', 'program'].includes(v) ? v : 'customer') as ViewId
+  const forcedView = (() => {
+    if (pathname === '/customers' || pathname.startsWith('/customers/')) return 'customer'
+    if (pathname === '/brands' || pathname.startsWith('/brands/')) return 'brand'
+    if (pathname === '/programs' || pathname.startsWith('/programs/')) return 'program'
+    return null
+  })()
+
+  if (forcedView) {
+    return forcedView
+  }
+
+  const v = sp?.get('v') as ViewId | null
+  if (v && ['customer', 'brand', 'program'].includes(v)) {
+    return v
+  }
+
+  return 'customer'
 }
 
 export function ViewSwitch() {
   const router = useRouter()
   const sp = useSearchParams()
-  const current = (sp?.get('v') || 'customer') as ViewId
+  const current = useCurrentView()
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
 
@@ -53,7 +69,7 @@ export function ViewSwitch() {
       program: '/programs',
     }
 
-    const params = new URLSearchParams()
+    const params = new URLSearchParams(sp?.toString() || '')
     params.set('v', next)
     router.push(`${viewHomes[next]}?${params.toString()}`)
   }

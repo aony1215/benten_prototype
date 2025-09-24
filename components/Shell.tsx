@@ -1,7 +1,8 @@
 'use client'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { ViewSwitch, useCurrentView } from '@/components/ViewSwitch'
+import type { ReadonlyURLSearchParams } from 'next/navigation'
+import { ViewSwitch, useCurrentView, type ViewId } from '@/components/ViewSwitch'
 import { Breadcrumbs, Crumb } from '@/components/Breadcrumbs'
 import { BookOpenCheck, FolderKanban, Users2, Landmark, Layers, User, Database } from 'lucide-react'
 import { clsx } from 'clsx'
@@ -33,15 +34,16 @@ const persistentItems: NavItem[] = [
   { href: '/datasources', label: 'データソース', icon: Database },
 ]
 
-function withView(href: string, sp: URLSearchParams | null): string {
+function withView(href: string, sp: ReadonlyURLSearchParams | null, fallbackView: ViewId): string {
   const params = new URLSearchParams(sp?.toString() || '')
-  if (!params.get('v')) params.set('v', 'customer')
+  if (!params.get('v')) params.set('v', fallbackView)
   return `${href}?${params.toString()}`
 }
 
 export function Shell({ children, crumbs }: { children: React.ReactNode; crumbs?: Crumb[] }) {
   const pathname = usePathname() || '/'
   const sp = useSearchParams()
+  const currentView = useCurrentView()
   const { items } = useNav()
 
   return (
@@ -59,7 +61,7 @@ export function Shell({ children, crumbs }: { children: React.ReactNode; crumbs?
             return (
               <div key={it.href} className="mb-1">
                 <Link
-                  href={withView(it.href, sp)}
+                  href={withView(it.href, sp, currentView)}
                   aria-current={active ? 'page' : undefined}
                   className={clsx(
                     'group flex items-center gap-3 rounded-xl px-3 py-2 font-medium text-slate-600 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200',
@@ -91,7 +93,7 @@ export function Shell({ children, crumbs }: { children: React.ReactNode; crumbs?
             return (
               <Link
                 key={it.href}
-                href={withView(it.href, sp)}
+                href={withView(it.href, sp, currentView)}
                 aria-current={active ? 'page' : undefined}
                 className={clsx(
                   'group flex items-center gap-3 rounded-xl px-2 py-2 text-sm font-medium text-slate-600 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200',
@@ -115,7 +117,7 @@ export function Shell({ children, crumbs }: { children: React.ReactNode; crumbs?
             )
           })}
           <Link
-            href={withView('/settings', sp)}
+            href={withView('/settings', sp, currentView)}
             className={clsx(
               'group flex items-center gap-3 rounded-xl px-2 py-2 text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-indigo-50/70 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200',
               pathname.startsWith('/settings') && 'bg-indigo-50 text-indigo-700 shadow-sm',
