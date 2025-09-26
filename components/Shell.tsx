@@ -565,6 +565,13 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
     const navDefinitions: ModeNavDefinition[] = [
       {
         path: '/customers',
+        label: '顧客一覧',
+        description: '顧客アカウントを横断的に確認',
+        icon: FolderKanban,
+        params: { section: 'list' },
+      },
+      {
+        path: '/customers',
         label: 'コンテキスト',
         description: '顧客ポートフォリオの背景と注力領域',
         icon: Info,
@@ -696,6 +703,13 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
   const activeSection = sp?.get('section') ?? 'context'
 
   const navDefinitions: ModeNavDefinition[] = [
+    {
+      path: '/customers',
+      label: '顧客一覧',
+      description: '他の顧客を参照',
+      icon: FolderKanban,
+      params: { section: 'list' },
+    },
     {
       path: '/customers',
       label: 'アカウント概要',
@@ -909,6 +923,13 @@ function buildBrandHierarchy({ sp, currentView, pathname }: BuilderArgs): Hierar
     const navDefinitions: ModeNavDefinition[] = [
       {
         path: '/brands',
+        label: 'ブランド一覧',
+        description: 'ブランドポートフォリオを俯瞰',
+        icon: FolderKanban,
+        params: { section: 'list' },
+      },
+      {
+        path: '/brands',
         label: 'コンテキスト',
         description: 'ブランドポートフォリオの背景',
         icon: Info,
@@ -1057,6 +1078,13 @@ function buildBrandHierarchy({ sp, currentView, pathname }: BuilderArgs): Hierar
   const activeSection = sp?.get('section') ?? 'context'
 
   const navDefinitions: ModeNavDefinition[] = [
+    {
+      path: '/brands',
+      label: 'ブランド一覧',
+      description: '他のブランドを参照',
+      icon: FolderKanban,
+      params: { section: 'list' },
+    },
     {
       path: '/brands',
       label: 'ブランド概要',
@@ -1212,6 +1240,13 @@ function buildProgramHierarchy({ sp, currentView, pathname }: BuilderArgs): Hier
     const navDefinitions: ModeNavDefinition[] = [
       {
         path: '/programs',
+        label: 'プログラム一覧',
+        description: '全プログラムの状況を俯瞰',
+        icon: FolderKanban,
+        params: { section: 'list' },
+      },
+      {
+        path: '/programs',
         label: 'コンテキスト',
         description: 'ポートフォリオ全体の背景',
         icon: Info,
@@ -1360,6 +1395,13 @@ function buildProgramHierarchy({ sp, currentView, pathname }: BuilderArgs): Hier
   const activeSection = sp?.get('section') ?? 'context'
 
   const navDefinitions: ModeNavDefinition[] = [
+    {
+      path: '/programs',
+      label: 'プログラム一覧',
+      description: '他のプログラムを参照',
+      icon: FolderKanban,
+      params: { section: 'list' },
+    },
     {
       path: '/programs',
       label: 'プログラム概要',
