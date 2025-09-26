@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { HierarchyDetail, Shell } from '@/components/Shell'
+import { Shell } from '@/components/Shell'
 import { AddButton } from '@/components/ui/AddButton'
 
 const brands = [
@@ -13,13 +13,6 @@ export default function Brands() {
   return (
     <Shell crumbs={[{ href: '/brands', label: 'ブランド一覧' }]}>
       <div className="space-y-8">
-        <HierarchyDetail
-          emptyState={
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-white/60 p-6 text-center text-sm text-slate-500">
-              中央のブランド一覧からブランドを選択すると詳細がここに表示されます。
-            </div>
-          }
-        />
         <section className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-900">ブランド一覧</h2>
