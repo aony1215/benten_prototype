@@ -14,8 +14,10 @@ import {
   Database,
   FilePenLine,
   FolderKanban,
+  Info,
   Landmark,
   Layers,
+  MessageSquare,
   Sparkles,
   Target,
   User,
@@ -77,6 +79,7 @@ type HierarchySection =
       type: 'context'
       id: string
       title: string
+      sectionKey: string
       entries: ContextEntry[]
     }
   | {
@@ -84,12 +87,14 @@ type HierarchySection =
       id: string
       title: string
       emptyText?: string
+      sectionKey: string
       items: CollectionItem[]
     }
 
 type HierarchyState = {
   breadcrumbs: Crumb[]
   sections: HierarchySection[]
+  activeSection: string | null
 }
 
 type CustomerProgram = {
@@ -379,13 +384,17 @@ function buildModeNavItems(
   sp: ReadonlyURLSearchParams | null,
   currentView: ViewId,
   pathname: string,
+  activeOverrides: Partial<Record<ControlledQueryKey, string>> = {},
 ): ModeNavItem[] {
   return definitions.map(def => {
     const href = createHrefWithView(def.path, sp, currentView, def.params)
     const basePath = def.path
     const matchesPath = pathname === basePath || pathname.startsWith(`${basePath}/`)
     const matchesParams = def.params
-      ? Object.entries(def.params).every(([key, value]) => sp?.get(key) === value)
+      ? Object.entries(def.params).every(([key, value]) => {
+          const candidate = sp?.get(key) ?? activeOverrides[key as ControlledQueryKey]
+          return candidate === value
+        })
       : true
     const isActive = matchesPath && matchesParams
     return { ...def, href, isActive }
@@ -437,6 +446,7 @@ function buildFallbackHierarchy(definitions: ModeNavDefinition[]): HierarchyBuil
             },
           ]
         : [],
+      activeSection: null,
     }
   }
 }
@@ -505,6 +515,7 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
   const customer = pickCustomer(sp)
   const brand = findBrand(customer, sp)
   const program = findProgram(brand, sp)
+  const activeSection = sp?.get('section') ?? 'context'
 
   const navDefinitions: ModeNavDefinition[] = []
 
@@ -544,13 +555,57 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
       params: {
         section: 'program-overview',
         customerId: customer.id,
-        brandId: brand?.id ?? '',
+        ...(brand ? { brandId: brand.id } : {}),
         programId: program.id,
       },
     })
   }
 
-  const items = buildModeNavItems(navDefinitions, sp, currentView, pathname)
+  const focusParams: Partial<Record<ControlledQueryKey, string>> = {
+    customerId: customer.id,
+  }
+  if (brand) {
+    focusParams.brandId = brand.id
+  }
+  if (program) {
+    focusParams.programId = program.id
+  }
+
+  navDefinitions.push(
+    {
+      path: '/customers',
+      label: 'コンテキスト',
+      description: `${program?.name ?? brand?.name ?? customer.name} の背景情報`,
+      icon: Info,
+      params: { ...focusParams, section: 'context' } as Record<string, string>,
+    },
+    {
+      path: '/customers',
+      label: '成果物',
+      description: '納品物と重要ドキュメント',
+      icon: FilePenLine,
+      params: { ...focusParams, section: 'deliverables' } as Record<string, string>,
+    },
+    {
+      path: '/customers',
+      label: 'コミュニケーション',
+      description: '会議・チャネル・タッチポイント',
+      icon: MessageSquare,
+      params: { ...focusParams, section: 'communications' } as Record<string, string>,
+    },
+    {
+      path: '/customers',
+      label: '戦略',
+      description: '長期施策とフォーカス領域',
+      icon: Target,
+      params: { ...focusParams, section: 'strategies' } as Record<string, string>,
+    },
+  )
+
+  const items = buildModeNavItems(navDefinitions, sp, currentView, pathname, {
+    ...focusParams,
+    section: activeSection,
+  })
 
   const breadcrumbs: Crumb[] = [
     { href: createHrefWithView('/customers', sp, 'customer'), label: '顧客' },
@@ -608,7 +663,18 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
   }
 
   const contextEntries = createContextSection(customer, brand, program)
-  sections.push({ type: 'context', id: 'customer-context', title: 'コンテキスト', entries: contextEntries })
+  const contextTitle = program
+    ? `${program.name} のコンテキスト`
+    : brand
+      ? `${brand.name} のコンテキスト`
+      : `${customer.name} のコンテキスト`
+  sections.push({
+    type: 'context',
+    id: 'customer-context',
+    title: contextTitle,
+    sectionKey: 'context',
+    entries: contextEntries,
+  })
 
   const deliverables = attachCollection(customer, brand, program, 'deliverables')
   const communications = attachCollection(customer, brand, program, 'communications')
@@ -619,6 +685,7 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
     id: 'customer-deliverables',
     title: '成果物',
     emptyText: '成果物はまだ登録されていません',
+    sectionKey: 'deliverables',
     items: deliverables,
   })
   sections.push({
@@ -626,6 +693,7 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
     id: 'customer-communications',
     title: 'コミュニケーション',
     emptyText: '関連するコミュニケーションはまだありません',
+    sectionKey: 'communications',
     items: communications,
   })
   sections.push({
@@ -633,10 +701,11 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
     id: 'customer-strategies',
     title: '戦略',
     emptyText: '戦略ドキュメントはまだ登録されていません',
+    sectionKey: 'strategies',
     items: strategies,
   })
 
-  return { breadcrumbs, sections }
+  return { breadcrumbs, sections, activeSection }
 }
 function buildBrandHierarchy({ sp, currentView, pathname }: BuilderArgs): HierarchyState {
   const allBrands: Array<{ customer: CustomerAccount; brand: CustomerBrand }> = []
@@ -650,6 +719,7 @@ function buildBrandHierarchy({ sp, currentView, pathname }: BuilderArgs): Hierar
   const fallback = allBrands[0]
   const active = allBrands.find(entry => entry.brand.id === requestedBrandId) ?? fallback
   const { customer, brand } = active
+  const activeSection = sp?.get('section') ?? 'context'
 
   const navDefinitions: ModeNavDefinition[] = [
     {
@@ -678,7 +748,43 @@ function buildBrandHierarchy({ sp, currentView, pathname }: BuilderArgs): Hierar
     })
   }
 
-  const items = buildModeNavItems(navDefinitions, sp, currentView, pathname)
+  const focusParams: Partial<Record<ControlledQueryKey, string>> = { brandId: brand.id }
+
+  navDefinitions.push(
+    {
+      path: '/brands',
+      label: 'コンテキスト',
+      description: `${brand.name} と ${customer.name} の背景`,
+      icon: Info,
+      params: { ...focusParams, section: 'context' } as Record<string, string>,
+    },
+    {
+      path: '/brands',
+      label: '成果物',
+      description: 'ブランドに紐づくアウトプット',
+      icon: FilePenLine,
+      params: { ...focusParams, section: 'deliverables' } as Record<string, string>,
+    },
+    {
+      path: '/brands',
+      label: 'コミュニケーション',
+      description: '最新の会話とタッチポイント',
+      icon: MessageSquare,
+      params: { ...focusParams, section: 'communications' } as Record<string, string>,
+    },
+    {
+      path: '/brands',
+      label: '戦略',
+      description: '重点施策とプラン',
+      icon: Target,
+      params: { ...focusParams, section: 'strategies' } as Record<string, string>,
+    },
+  )
+
+  const items = buildModeNavItems(navDefinitions, sp, currentView, pathname, {
+    ...focusParams,
+    section: activeSection,
+  })
 
   const breadcrumbs: Crumb[] = [
     { href: createHrefWithView('/brands', sp, 'brand'), label: 'ブランド' },
@@ -712,13 +818,20 @@ function buildBrandHierarchy({ sp, currentView, pathname }: BuilderArgs): Hierar
     { label: '注力市場', value: brand.keyMarkets },
   ]
 
-  sections.push({ type: 'context', id: 'brand-context', title: 'コンテキスト', entries: contextEntries })
+  sections.push({
+    type: 'context',
+    id: 'brand-context',
+    title: `${brand.name} のコンテキスト`,
+    sectionKey: 'context',
+    entries: contextEntries,
+  })
 
   sections.push({
     type: 'collection',
     id: 'brand-deliverables',
     title: '成果物',
     emptyText: 'ブランドに紐づく成果物はまだありません',
+    sectionKey: 'deliverables',
     items: brand.deliverables,
   })
   sections.push({
@@ -726,6 +839,7 @@ function buildBrandHierarchy({ sp, currentView, pathname }: BuilderArgs): Hierar
     id: 'brand-communications',
     title: 'コミュニケーション',
     emptyText: '共有チャネルはまだありません',
+    sectionKey: 'communications',
     items: brand.communications,
   })
   sections.push({
@@ -733,10 +847,11 @@ function buildBrandHierarchy({ sp, currentView, pathname }: BuilderArgs): Hierar
     id: 'brand-strategies',
     title: '戦略',
     emptyText: '戦略はまだ登録されていません',
+    sectionKey: 'strategies',
     items: brand.strategies,
   })
 
-  return { breadcrumbs, sections }
+  return { breadcrumbs, sections, activeSection }
 }
 function buildProgramHierarchy({ sp, currentView, pathname }: BuilderArgs): HierarchyState {
   const allPrograms: Array<{ customer: CustomerAccount; brand: CustomerBrand; program: CustomerProgram }> = []
@@ -752,6 +867,7 @@ function buildProgramHierarchy({ sp, currentView, pathname }: BuilderArgs): Hier
   const fallback = allPrograms[0]
   const active = allPrograms.find(entry => entry.program.id === requestedProgramId) ?? fallback
   const { customer, brand, program } = active
+  const activeSection = sp?.get('section') ?? 'context'
 
   const navDefinitions: ModeNavDefinition[] = [
     {
@@ -777,7 +893,47 @@ function buildProgramHierarchy({ sp, currentView, pathname }: BuilderArgs): Hier
     },
   ]
 
-  const items = buildModeNavItems(navDefinitions, sp, currentView, pathname)
+  const focusParams: Partial<Record<ControlledQueryKey, string>> = {
+    customerId: customer.id,
+    brandId: brand.id,
+    programId: program.id,
+  }
+
+  navDefinitions.push(
+    {
+      path: '/programs',
+      label: 'コンテキスト',
+      description: `${program.name} の目的と背景`,
+      icon: Info,
+      params: { ...focusParams, section: 'context' } as Record<string, string>,
+    },
+    {
+      path: '/programs',
+      label: '成果物',
+      description: '進行中・提出済みのアウトプット',
+      icon: FilePenLine,
+      params: { ...focusParams, section: 'deliverables' } as Record<string, string>,
+    },
+    {
+      path: '/programs',
+      label: 'コミュニケーション',
+      description: '会議や連絡チャネル',
+      icon: MessageSquare,
+      params: { ...focusParams, section: 'communications' } as Record<string, string>,
+    },
+    {
+      path: '/programs',
+      label: '戦略',
+      description: '狙いと戦術の整理',
+      icon: Target,
+      params: { ...focusParams, section: 'strategies' } as Record<string, string>,
+    },
+  )
+
+  const items = buildModeNavItems(navDefinitions, sp, currentView, pathname, {
+    ...focusParams,
+    section: activeSection,
+  })
 
   const breadcrumbs: Crumb[] = [
     { href: createHrefWithView('/programs', sp, 'program'), label: 'プログラム' },
@@ -811,13 +967,20 @@ function buildProgramHierarchy({ sp, currentView, pathname }: BuilderArgs): Hier
     { label: '現在の進捗', value: program.status, meta: program.currentSprint },
   ]
 
-  sections.push({ type: 'context', id: 'program-context', title: 'コンテキスト', entries: contextEntries })
+  sections.push({
+    type: 'context',
+    id: 'program-context',
+    title: `${program.name} のコンテキスト`,
+    sectionKey: 'context',
+    entries: contextEntries,
+  })
 
   sections.push({
     type: 'collection',
     id: 'program-deliverables',
     title: '成果物',
     emptyText: '成果物はまだ登録されていません',
+    sectionKey: 'deliverables',
     items: program.deliverables,
   })
   sections.push({
@@ -825,6 +988,7 @@ function buildProgramHierarchy({ sp, currentView, pathname }: BuilderArgs): Hier
     id: 'program-communications',
     title: 'コミュニケーション',
     emptyText: '関連するコミュニケーションはまだありません',
+    sectionKey: 'communications',
     items: program.communications,
   })
   sections.push({
@@ -832,10 +996,11 @@ function buildProgramHierarchy({ sp, currentView, pathname }: BuilderArgs): Hier
     id: 'program-strategies',
     title: '戦略',
     emptyText: '戦略ドキュメントはまだ登録されていません',
+    sectionKey: 'strategies',
     items: program.strategies,
   })
 
-  return { breadcrumbs, sections }
+  return { breadcrumbs, sections, activeSection }
 }
 const HIERARCHY_BUILDERS: Record<ViewId, HierarchyBuilder> = {
   projects: buildFallbackHierarchy(MODE_NAV_FALLBACK.projects),
@@ -857,7 +1022,13 @@ function useNav(crumbsFromProps?: Crumb[]) {
   const breadcrumbs = hierarchy.breadcrumbs.length ? hierarchy.breadcrumbs : crumbsFromProps ?? []
   const hasMenu = hierarchy.sections.length > 0
 
-  return { modeOptions, sections: hierarchy.sections, breadcrumbs, hasMenu }
+  return {
+    modeOptions,
+    sections: hierarchy.sections,
+    breadcrumbs,
+    hasMenu,
+    activeSection: hierarchy.activeSection,
+  }
 }
 
 function statusLabel(status?: CollectionItem['status']) {
@@ -875,8 +1046,18 @@ function statusLabel(status?: CollectionItem['status']) {
 }
 
 export function Shell({ children, crumbs }: { children: React.ReactNode; crumbs?: Crumb[] }) {
-  const { modeOptions, sections, breadcrumbs, hasMenu } = useNav(crumbs)
+  const { modeOptions, sections, breadcrumbs, hasMenu, activeSection } = useNav(crumbs)
   const totalRailWidth = ICON_RAIL_WIDTH + (hasMenu ? DEFAULT_MENU_WIDTH : 0)
+
+  const visibleSections = sections.filter(section => {
+    if (section.type === 'navigation') {
+      return true
+    }
+    if (!activeSection) {
+      return false
+    }
+    return section.sectionKey === activeSection
+  })
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -922,7 +1103,7 @@ export function Shell({ children, crumbs }: { children: React.ReactNode; crumbs?
               <Breadcrumbs crumbs={breadcrumbs} />
             </div>
             <div className="flex-1 space-y-6 overflow-y-auto px-4 py-4">
-              {sections.map(section => {
+              {visibleSections.map(section => {
                 if (section.type === 'navigation') {
                   return (
                     <section key={section.id} className="space-y-3">
