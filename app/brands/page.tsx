@@ -4,9 +4,9 @@ import { HierarchyDetail, Shell } from '@/components/Shell'
 import { AddButton } from '@/components/ui/AddButton'
 
 const brands = [
-  { id: 'brd_shoestore', name: 'ShoeStore', account: 'Global Retail Inc.' },
-  { id: 'brd_gadgets', name: 'Gadgets+', account: 'Global Retail Inc.' },
-  { id: 'brd_futuretech', name: 'FutureTech Gear', account: 'Tech Starter' },
+  { id: 'brand-shoestore', name: 'ShoeStore', account: 'A社（Global Retail Inc.）' },
+  { id: 'brand-gadgets', name: 'Gadgets+', account: 'A社（Global Retail Inc.）' },
+  { id: 'brand-futuretech', name: 'FutureTech Gear', account: 'B社（Tech Starter）' },
 ]
 
 export default function Brands() {
@@ -16,7 +16,7 @@ export default function Brands() {
         <HierarchyDetail />
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-900">ブランドコレクション</h2>
+            <h2 className="text-lg font-semibold text-slate-900">ブランド一覧</h2>
             <AddButton href="/brands/new">新規登録</AddButton>
           </div>
           <div className="grid gap-3 md:grid-cols-2">

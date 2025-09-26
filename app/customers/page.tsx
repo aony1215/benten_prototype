@@ -4,8 +4,8 @@ import { HierarchyDetail, Shell } from '@/components/Shell'
 import { AddButton } from '@/components/ui/AddButton'
 
 const customers = [
-  { id: 'acc_globalretail', name: 'A社（Global Retail Inc.）', website: 'https://www.globalretail.example' },
-  { id: 'acc_techstarter', name: 'B社（Tech Starter）', website: 'https://www.techstarter.example' },
+  { id: 'cust-global-retail', name: 'A社（Global Retail Inc.）', website: 'https://www.globalretail.example' },
+  { id: 'cust-tech-starter', name: 'B社（Tech Starter）', website: 'https://www.techstarter.example' },
 ]
 
 export default function Customers() {
@@ -15,7 +15,7 @@ export default function Customers() {
         <HierarchyDetail />
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-900">顧客ライブラリ</h2>
+            <h2 className="text-lg font-semibold text-slate-900">顧客一覧</h2>
             <AddButton href="/customers/new">新規登録</AddButton>
           </div>
           <div className="grid gap-3 md:grid-cols-2">

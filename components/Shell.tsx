@@ -156,16 +156,16 @@ type CustomerAccount = {
 
 const CUSTOMER_GRAPH: CustomerAccount[] = [
   {
-    id: 'cust-001',
-    name: '株式会社エバーライト',
+    id: 'cust-global-retail',
+    name: 'A社（Global Retail Inc.）',
     owner: '田中 未来',
-    industry: 'スマートライティング',
-    region: '東京',
+    industry: '小売 / オムニチャネル',
+    region: '東京 / 北米',
     health: '良好',
     healthMeta: 'NRR 118% / ヘルススコア 8.7',
     deliverables: [
       { id: 'deliv-cust-1', label: 'Q2 エグゼクティブレビュー', meta: '提出済み・2024/06/20', status: 'delivered' },
-      { id: 'deliv-cust-2', label: 'オンボーディング改善ロードマップ', meta: 'レビュー待ち・2024/07/05', status: 'active' },
+      { id: 'deliv-cust-2', label: 'オムニチャネル改善ロードマップ', meta: 'レビュー待ち・2024/07/05', status: 'active' },
     ],
     communications: [
       { id: 'comm-cust-1', label: '経営層定例ミーティング', meta: '次回 2024/07/12', status: 'active' },
@@ -177,20 +177,20 @@ const CUSTOMER_GRAPH: CustomerAccount[] = [
     ],
     brands: [
       {
-        id: 'brand-aurora',
-        name: 'Everlight Aurora',
-        mission: 'プレミアム向け IoT 照明ブランド',
+        id: 'brand-shoestore',
+        name: 'ShoeStore',
+        mission: '都市型スニーカーブランド',
         lead: '佐藤 輝',
         health: '注意',
         healthMeta: 'キャンペーン ROI 64%',
         keyMarkets: 'アジア・北米',
         deliverables: [
-          { id: 'deliv-brand-1', label: 'Aurora ブランド診断レポート', meta: '提出済み・2024/06/05', status: 'delivered' },
+          { id: 'deliv-brand-1', label: 'ShoeStore ブランド診断レポート', meta: '提出済み・2024/06/05', status: 'delivered' },
           { id: 'deliv-brand-2', label: '夏季キャンペーン提案書', meta: 'ドラフト・2024/07/08', status: 'active' },
         ],
         communications: [
           { id: 'comm-brand-1', label: 'マーケチーム Slack チャンネル', meta: '未読 3 件', status: 'active' },
-          { id: 'comm-brand-2', label: 'Aurora 戦略ワークショップ', meta: '開催予定 2024/07/22', status: 'planning' },
+          { id: 'comm-brand-2', label: 'ShoeStore 戦略ワークショップ', meta: '開催予定 2024/07/22', status: 'planning' },
         ],
         strategies: [
           { id: 'strat-brand-1', label: '市場拡張 GTM プラン', meta: 'フェーズ1完了', status: 'active' },
@@ -198,18 +198,18 @@ const CUSTOMER_GRAPH: CustomerAccount[] = [
         ],
         programs: [
           {
-            id: 'prog-onboard',
-            name: 'オンボーディング改善プログラム',
+            id: 'prog-bidding',
+            name: '入札最適化プログラム',
             lead: '藤井 昂',
             status: '進行中',
             currentSprint: 'Sprint 3 / 6',
             deliverables: [
-              { id: 'deliv-prog-1', label: 'オンボーディング UX レポート', meta: 'レビュー待ち・2024/07/03', status: 'active' },
+              { id: 'deliv-prog-1', label: '広告入札改善レポート', meta: 'レビュー待ち・2024/07/03', status: 'active' },
               { id: 'deliv-prog-2', label: '新機能導入計画', meta: '準備中・2024/07/18', status: 'planning' },
             ],
             communications: [
               { id: 'comm-prog-1', label: '週次スタンドアップ', meta: '次回 2024/07/04', status: 'active' },
-              { id: 'comm-prog-2', label: 'Aurora CX チャンネル', meta: '未読 1 件', status: 'active' },
+              { id: 'comm-prog-2', label: 'ShoeStore CX チャンネル', meta: '未読 1 件', status: 'active' },
             ],
             strategies: [
               { id: 'strat-prog-1', label: 'エンゲージメント向上戦略', meta: '実行率 70%', status: 'active' },
@@ -217,13 +217,13 @@ const CUSTOMER_GRAPH: CustomerAccount[] = [
             ],
           },
           {
-            id: 'prog-loyalty',
-            name: 'ロイヤリティ向上プログラム',
+            id: 'prog-reporting',
+            name: '週次レポート自動化プログラム',
             lead: '近藤 沙耶',
             status: '計画中',
             currentSprint: 'Kickoff 準備',
             deliverables: [
-              { id: 'deliv-prog-3', label: 'ロイヤリティキャンバス', meta: '起案中', status: 'planning' },
+              { id: 'deliv-prog-3', label: '自動レポート設計', meta: '起案中', status: 'planning' },
             ],
             communications: [
               { id: 'comm-prog-3', label: '準備タスクフォロー', meta: '担当 3 名', status: 'active' },
@@ -235,9 +235,9 @@ const CUSTOMER_GRAPH: CustomerAccount[] = [
         ],
       },
       {
-        id: 'brand-lumen',
-        name: 'Lumen Street',
-        mission: '都市型スマート街灯のサブブランド',
+        id: 'brand-gadgets',
+        name: 'Gadgets+',
+        mission: 'スマートガジェットのサブスクリプション',
         lead: '原田 玲奈',
         health: '良好',
         healthMeta: '導入都市 26 / CSAT 4.6',
@@ -254,7 +254,7 @@ const CUSTOMER_GRAPH: CustomerAccount[] = [
         programs: [
           {
             id: 'prog-expansion',
-            name: '北米拡張プログラム',
+            name: '国際展開プログラム',
             lead: '吉本 海斗',
             status: '進行中',
             currentSprint: 'Sprint 2 / 8',
@@ -273,10 +273,10 @@ const CUSTOMER_GRAPH: CustomerAccount[] = [
     ],
   },
   {
-    id: 'cust-002',
-    name: 'Brighton Holdings',
-    owner: 'Michael Green',
-    industry: '不動産テック',
+    id: 'cust-tech-starter',
+    name: 'B社（Tech Starter）',
+    owner: '加藤 祐介',
+    industry: 'SaaS プラットフォーム',
     region: '大阪 / シンガポール',
     health: '成長',
     healthMeta: 'NRR 134% / Upsell 3 件',
@@ -291,9 +291,9 @@ const CUSTOMER_GRAPH: CustomerAccount[] = [
     ],
     brands: [
       {
-        id: 'brand-bright',
-        name: 'Bright Living',
-        mission: 'IoT リビング体験',
+        id: 'brand-futuretech',
+        name: 'FutureTech Gear',
+        mission: '次世代プロダクト向けツール群',
         lead: 'Sophie Tan',
         health: '良好',
         healthMeta: 'CSAT 4.8',
@@ -608,7 +608,6 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
 
     const items = buildModeNavItems(navDefinitions, sp, currentView, pathname, { section: activeSection })
     const breadcrumbs: Crumb[] = [
-      { href: '/', label: 'ホーム' },
       { href: createHrefWithView('/customers', sp, 'customer'), label: '顧客' },
     ]
 
@@ -813,7 +812,6 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
   })
 
   const breadcrumbs: Crumb[] = [
-    { href: '/', label: 'ホーム' },
     { href: createHrefWithView('/customers', sp, 'customer'), label: '顧客' },
     {
       href: createHrefWithView(
@@ -930,8 +928,185 @@ function buildBrandHierarchy({ sp, currentView, pathname }: BuilderArgs): Hierar
       requestedBrandId = candidate
     }
   }
+
+  if (!requestedBrandId) {
+    const activeSection = sp?.get('section') ?? 'list'
+    const navDefinitions: ModeNavDefinition[] = [
+      {
+        path: '/brands',
+        label: 'ブランド一覧',
+        description: '登録済みブランドを俯瞰',
+        icon: Landmark,
+        params: { section: 'list' },
+      },
+      {
+        path: '/brands',
+        label: 'コンテキスト',
+        description: 'ブランドポートフォリオの背景',
+        icon: Info,
+        params: { section: 'context' },
+      },
+      {
+        path: '/brands',
+        label: '成果物',
+        description: '横断的なブランド成果物',
+        icon: FilePenLine,
+        params: { section: 'deliverables' },
+      },
+      {
+        path: '/brands',
+        label: 'コミュニケーション',
+        description: '主要チャネルのハイライト',
+        icon: MessageSquare,
+        params: { section: 'communications' },
+      },
+      {
+        path: '/brands',
+        label: '戦略',
+        description: 'ブランド戦略の要点',
+        icon: Target,
+        params: { section: 'strategies' },
+      },
+    ]
+
+    const items = buildModeNavItems(navDefinitions, sp, currentView, pathname, {
+      section: activeSection,
+    })
+
+    const breadcrumbs: Crumb[] = [
+      { href: createHrefWithView('/brands', sp, 'brand'), label: 'ブランド' },
+    ]
+
+    const sections: HierarchySection[] = []
+    if (items.length) {
+      sections.push({
+        type: 'navigation',
+        id: 'brand-portfolio-navigation',
+        title: 'ブランドポートフォリオ',
+        description: 'ブランドごとのビューとナレッジ',
+        items,
+      })
+    }
+
+    const listItems: CollectionItem[] = allBrands.map(({ customer, brand }) => ({
+      id: brand.id,
+      label: brand.name,
+      meta: `${customer.name} / ${brand.keyMarkets}`,
+      status: brand.health === '注意' ? 'alert' : 'active',
+      href: createHrefWithView(
+        '/brands',
+        sp,
+        'brand',
+        { brandId: brand.id, section: 'overview' },
+      ),
+    }))
+
+    sections.push({
+      type: 'collection',
+      id: 'brand-portfolio-list',
+      title: 'ブランド一覧',
+      sectionKey: 'list',
+      emptyText: 'ブランドがまだ登録されていません',
+      items: listItems,
+    })
+
+    const relatedCustomers = new Set(allBrands.map(entry => entry.customer.id)).size
+    const activePrograms = allBrands.reduce((total, entry) => total + entry.brand.programs.length, 0)
+    const attentionBrands = allBrands.filter(entry => entry.brand.health === '注意').length
+
+    const portfolioContext: ContextEntry[] = [
+      { label: 'ブランド数', value: `${allBrands.length}件` },
+      { label: '関連顧客', value: `${relatedCustomers}社` },
+      { label: 'アクティブプログラム', value: `${activePrograms}件` },
+      { label: '要注意ブランド', value: `${attentionBrands}件`, meta: 'ヘルス指標が注意のブランド数' },
+    ]
+
+    sections.push({
+      type: 'context',
+      id: 'brand-portfolio-context',
+      title: 'ブランドポートフォリオのコンテキスト',
+      sectionKey: 'context',
+      entries: portfolioContext,
+    })
+
+    const aggregatedDeliverables: CollectionItem[] = allBrands
+      .flatMap(({ brand }) =>
+        brand.deliverables.slice(0, 2).map(item => ({
+          ...item,
+          href: createHrefWithView(
+            '/brands',
+            sp,
+            'brand',
+            { brandId: brand.id, section: 'deliverables' },
+          ),
+        })),
+      )
+      .slice(0, 6)
+
+    sections.push({
+      type: 'collection',
+      id: 'brand-portfolio-deliverables',
+      title: '成果物',
+      sectionKey: 'deliverables',
+      emptyText: '横断的なブランド成果物はまだ登録されていません',
+      items: aggregatedDeliverables,
+    })
+
+    const aggregatedCommunications: CollectionItem[] = allBrands
+      .flatMap(({ brand }) =>
+        brand.communications.slice(0, 2).map(item => ({
+          ...item,
+          href: createHrefWithView(
+            '/brands',
+            sp,
+            'brand',
+            { brandId: brand.id, section: 'communications' },
+          ),
+        })),
+      )
+      .slice(0, 6)
+
+    sections.push({
+      type: 'collection',
+      id: 'brand-portfolio-communications',
+      title: 'コミュニケーション',
+      sectionKey: 'communications',
+      emptyText: '共有のコミュニケーションはまだ登録されていません',
+      items: aggregatedCommunications,
+    })
+
+    const aggregatedStrategies: CollectionItem[] = allBrands
+      .flatMap(({ brand }) =>
+        brand.strategies.slice(0, 2).map(item => ({
+          ...item,
+          href: createHrefWithView(
+            '/brands',
+            sp,
+            'brand',
+            { brandId: brand.id, section: 'strategies' },
+          ),
+        })),
+      )
+      .slice(0, 6)
+
+    sections.push({
+      type: 'collection',
+      id: 'brand-portfolio-strategies',
+      title: '戦略',
+      sectionKey: 'strategies',
+      emptyText: '横断的なブランド戦略はまだ登録されていません',
+      items: aggregatedStrategies,
+    })
+
+    return { breadcrumbs, sections, activeSection, selection: {} }
+  }
+
   const fallback = allBrands[0]
   const active = allBrands.find(entry => entry.brand.id === requestedBrandId) ?? fallback
+  if (!active) {
+    return { breadcrumbs: [], sections: [], activeSection: null, selection: {} }
+  }
+
   const { customer, brand } = active
   const activeSection = sp?.get('section') ?? 'context'
 
@@ -1001,18 +1176,6 @@ function buildBrandHierarchy({ sp, currentView, pathname }: BuilderArgs): Hierar
   })
 
   const breadcrumbs: Crumb[] = [
-    { href: '/', label: 'ホーム' },
-    { href: createHrefWithView('/customers', sp, 'customer'), label: '顧客' },
-    {
-      href: createHrefWithView(
-        '/customers',
-        sp,
-        'customer',
-        { customerId: customer.id },
-        { preserve: ['customerId'] },
-      ),
-      label: customer.name,
-    },
     { href: createHrefWithView('/brands', sp, 'brand'), label: 'ブランド' },
     {
       href: createHrefWithView(
@@ -1096,8 +1259,185 @@ function buildProgramHierarchy({ sp, currentView, pathname }: BuilderArgs): Hier
       requestedProgramId = candidate
     }
   }
+
+  if (!requestedProgramId) {
+    const activeSection = sp?.get('section') ?? 'list'
+    const navDefinitions: ModeNavDefinition[] = [
+      {
+        path: '/programs',
+        label: 'プログラム一覧',
+        description: '進行中の取り組みを俯瞰',
+        icon: Layers,
+        params: { section: 'list' },
+      },
+      {
+        path: '/programs',
+        label: 'コンテキスト',
+        description: 'ポートフォリオ全体の背景',
+        icon: Info,
+        params: { section: 'context' },
+      },
+      {
+        path: '/programs',
+        label: '成果物',
+        description: '主要アウトプットのハイライト',
+        icon: FilePenLine,
+        params: { section: 'deliverables' },
+      },
+      {
+        path: '/programs',
+        label: 'コミュニケーション',
+        description: '会議やタッチポイント',
+        icon: MessageSquare,
+        params: { section: 'communications' },
+      },
+      {
+        path: '/programs',
+        label: '戦略',
+        description: 'プログラム戦略の要約',
+        icon: Target,
+        params: { section: 'strategies' },
+      },
+    ]
+
+    const items = buildModeNavItems(navDefinitions, sp, currentView, pathname, {
+      section: activeSection,
+    })
+
+    const breadcrumbs: Crumb[] = [
+      { href: createHrefWithView('/programs', sp, 'program'), label: 'プログラム' },
+    ]
+
+    const sections: HierarchySection[] = []
+    if (items.length) {
+      sections.push({
+        type: 'navigation',
+        id: 'program-portfolio-navigation',
+        title: 'プログラムポートフォリオ',
+        description: 'プログラム単位のビューを選択',
+        items,
+      })
+    }
+
+    const listItems: CollectionItem[] = allPrograms.map(({ customer, brand, program }) => ({
+      id: program.id,
+      label: program.name,
+      meta: `${brand.name} / ${customer.name}`,
+      status: program.status.includes('計画') ? 'planning' : 'active',
+      href: createHrefWithView(
+        '/programs',
+        sp,
+        'program',
+        { programId: program.id, section: 'overview' },
+      ),
+    }))
+
+    sections.push({
+      type: 'collection',
+      id: 'program-portfolio-list',
+      title: 'プログラム一覧',
+      sectionKey: 'list',
+      emptyText: 'プログラムがまだ登録されていません',
+      items: listItems,
+    })
+
+    const totalBrands = new Set(allPrograms.map(entry => entry.brand.id)).size
+    const totalCustomers = new Set(allPrograms.map(entry => entry.customer.id)).size
+    const activeCount = allPrograms.filter(entry => entry.program.status.includes('進行')).length
+
+    const portfolioContext: ContextEntry[] = [
+      { label: 'プログラム数', value: `${allPrograms.length}件` },
+      { label: '参画ブランド', value: `${totalBrands}ブランド` },
+      { label: '参画顧客', value: `${totalCustomers}社` },
+      { label: '進行中', value: `${activeCount}件`, meta: '「進行中」のステータス数' },
+    ]
+
+    sections.push({
+      type: 'context',
+      id: 'program-portfolio-context',
+      title: 'プログラムポートフォリオのコンテキスト',
+      sectionKey: 'context',
+      entries: portfolioContext,
+    })
+
+    const aggregatedDeliverables: CollectionItem[] = allPrograms
+      .flatMap(({ program }) =>
+        program.deliverables.slice(0, 2).map(item => ({
+          ...item,
+          href: createHrefWithView(
+            '/programs',
+            sp,
+            'program',
+            { programId: program.id, section: 'deliverables' },
+          ),
+        })),
+      )
+      .slice(0, 6)
+
+    sections.push({
+      type: 'collection',
+      id: 'program-portfolio-deliverables',
+      title: '成果物',
+      sectionKey: 'deliverables',
+      emptyText: '横断的な成果物はまだ登録されていません',
+      items: aggregatedDeliverables,
+    })
+
+    const aggregatedCommunications: CollectionItem[] = allPrograms
+      .flatMap(({ program }) =>
+        program.communications.slice(0, 2).map(item => ({
+          ...item,
+          href: createHrefWithView(
+            '/programs',
+            sp,
+            'program',
+            { programId: program.id, section: 'communications' },
+          ),
+        })),
+      )
+      .slice(0, 6)
+
+    sections.push({
+      type: 'collection',
+      id: 'program-portfolio-communications',
+      title: 'コミュニケーション',
+      sectionKey: 'communications',
+      emptyText: '横断的なコミュニケーションはまだ登録されていません',
+      items: aggregatedCommunications,
+    })
+
+    const aggregatedStrategies: CollectionItem[] = allPrograms
+      .flatMap(({ program }) =>
+        program.strategies.slice(0, 2).map(item => ({
+          ...item,
+          href: createHrefWithView(
+            '/programs',
+            sp,
+            'program',
+            { programId: program.id, section: 'strategies' },
+          ),
+        })),
+      )
+      .slice(0, 6)
+
+    sections.push({
+      type: 'collection',
+      id: 'program-portfolio-strategies',
+      title: '戦略',
+      sectionKey: 'strategies',
+      emptyText: '横断的なプログラム戦略はまだ登録されていません',
+      items: aggregatedStrategies,
+    })
+
+    return { breadcrumbs, sections, activeSection, selection: {} }
+  }
+
   const fallback = allPrograms[0]
   const active = allPrograms.find(entry => entry.program.id === requestedProgramId) ?? fallback
+  if (!active) {
+    return { breadcrumbs: [], sections: [], activeSection: null, selection: {} }
+  }
+
   const { customer, brand, program } = active
   const activeSection = sp?.get('section') ?? 'context'
 
@@ -1168,29 +1508,6 @@ function buildProgramHierarchy({ sp, currentView, pathname }: BuilderArgs): Hier
   })
 
   const breadcrumbs: Crumb[] = [
-    { href: '/', label: 'ホーム' },
-    { href: createHrefWithView('/customers', sp, 'customer'), label: '顧客' },
-    {
-      href: createHrefWithView(
-        '/customers',
-        sp,
-        'customer',
-        { customerId: customer.id },
-        { preserve: ['customerId'] },
-      ),
-      label: customer.name,
-    },
-    { href: createHrefWithView('/brands', sp, 'brand'), label: 'ブランド' },
-    {
-      href: createHrefWithView(
-        '/brands',
-        sp,
-        'brand',
-        { brandId: brand.id },
-        { preserve: ['brandId'] },
-      ),
-      label: brand.name,
-    },
     { href: createHrefWithView('/programs', sp, 'program'), label: 'プログラム' },
     {
       href: createHrefWithView(
