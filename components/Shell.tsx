@@ -45,6 +45,14 @@ type ModeNavItem = ModeNavDefinition & {
   isActive: boolean
 }
 
+type NavigationItemSummary = {
+  label: string
+  description?: string
+  params?: Record<string, string>
+  href: string
+  isActive: boolean
+}
+
 type ModeOption = {
   id: ViewId
   label: string
@@ -91,10 +99,20 @@ type HierarchySection =
       items: CollectionItem[]
     }
 
+type NavigationSection = Extract<HierarchySection, { type: 'navigation' }>
+type DetailSection = Extract<HierarchySection, { type: 'context' | 'collection' }>
+
+type HierarchySelection = {
+  customer?: CustomerAccount
+  brand?: CustomerBrand | null
+  program?: CustomerProgram | null
+}
+
 type HierarchyState = {
   breadcrumbs: Crumb[]
   sections: HierarchySection[]
   activeSection: string | null
+  selection: HierarchySelection
 }
 
 type CustomerProgram = {
@@ -447,25 +465,44 @@ function buildFallbackHierarchy(definitions: ModeNavDefinition[]): HierarchyBuil
           ]
         : [],
       activeSection: null,
+      selection: {},
     }
   }
 }
 
-function pickCustomer(sp: ReadonlyURLSearchParams | null) {
-  const requestedId = sp?.get('customerId')
+function pickCustomer(sp: ReadonlyURLSearchParams | null, pathname: string) {
+  let requestedId = sp?.get('customerId')
+  if (!requestedId && pathname.startsWith('/customers/')) {
+    const [, , candidate] = pathname.split('/')
+    if (candidate) {
+      requestedId = candidate
+    }
+  }
   const customer = CUSTOMER_GRAPH.find(account => account.id === requestedId) ?? CUSTOMER_GRAPH[0]
   return customer
 }
 
-function findBrand(customer: CustomerAccount, sp: ReadonlyURLSearchParams | null) {
-  const requestedId = sp?.get('brandId')
+function findBrand(customer: CustomerAccount, sp: ReadonlyURLSearchParams | null, pathname: string) {
+  let requestedId = sp?.get('brandId')
+  if (!requestedId && pathname.startsWith('/brands/')) {
+    const [, , candidate] = pathname.split('/')
+    if (candidate) {
+      requestedId = candidate
+    }
+  }
   if (!requestedId) return null
   return customer.brands.find(brand => brand.id === requestedId) ?? null
 }
 
-function findProgram(brand: CustomerBrand | null, sp: ReadonlyURLSearchParams | null) {
+function findProgram(brand: CustomerBrand | null, sp: ReadonlyURLSearchParams | null, pathname: string) {
   if (!brand) return null
-  const requestedId = sp?.get('programId')
+  let requestedId = sp?.get('programId')
+  if (!requestedId && pathname.startsWith('/programs/')) {
+    const [, , candidate] = pathname.split('/')
+    if (candidate) {
+      requestedId = candidate
+    }
+  }
   if (!requestedId) return null
   return brand.programs.find(program => program.id === requestedId) ?? null
 }
@@ -512,9 +549,9 @@ function attachCollection(
   return customer[key]
 }
 function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): HierarchyState {
-  const customer = pickCustomer(sp)
-  const brand = findBrand(customer, sp)
-  const program = findProgram(brand, sp)
+  const customer = pickCustomer(sp, pathname)
+  const brand = findBrand(customer, sp, pathname)
+  const program = findProgram(brand, sp, pathname)
   const activeSection = sp?.get('section') ?? 'context'
 
   const navDefinitions: ModeNavDefinition[] = []
@@ -608,6 +645,7 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
   })
 
   const breadcrumbs: Crumb[] = [
+    { href: '/', label: 'ホーム' },
     { href: createHrefWithView('/customers', sp, 'customer'), label: '顧客' },
     {
       href: createHrefWithView(
@@ -622,6 +660,7 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
   ]
 
   if (brand) {
+    breadcrumbs.push({ href: createHrefWithView('/brands', sp, 'brand'), label: 'ブランド' })
     breadcrumbs.push({
       href: createHrefWithView(
         '/customers',
@@ -635,6 +674,7 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
   }
 
   if (brand && program) {
+    breadcrumbs.push({ href: createHrefWithView('/programs', sp, 'program'), label: 'プログラム' })
     breadcrumbs.push({
       href: createHrefWithView(
         '/customers',
@@ -705,7 +745,7 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
     items: strategies,
   })
 
-  return { breadcrumbs, sections, activeSection }
+  return { breadcrumbs, sections, activeSection, selection: { customer, brand, program } }
 }
 function buildBrandHierarchy({ sp, currentView, pathname }: BuilderArgs): HierarchyState {
   const allBrands: Array<{ customer: CustomerAccount; brand: CustomerBrand }> = []
@@ -715,7 +755,13 @@ function buildBrandHierarchy({ sp, currentView, pathname }: BuilderArgs): Hierar
     })
   })
 
-  const requestedBrandId = sp?.get('brandId')
+  let requestedBrandId = sp?.get('brandId')
+  if (!requestedBrandId && pathname.startsWith('/brands/')) {
+    const [, , candidate] = pathname.split('/')
+    if (candidate) {
+      requestedBrandId = candidate
+    }
+  }
   const fallback = allBrands[0]
   const active = allBrands.find(entry => entry.brand.id === requestedBrandId) ?? fallback
   const { customer, brand } = active
@@ -787,6 +833,18 @@ function buildBrandHierarchy({ sp, currentView, pathname }: BuilderArgs): Hierar
   })
 
   const breadcrumbs: Crumb[] = [
+    { href: '/', label: 'ホーム' },
+    { href: createHrefWithView('/customers', sp, 'customer'), label: '顧客' },
+    {
+      href: createHrefWithView(
+        '/customers',
+        sp,
+        'customer',
+        { customerId: customer.id },
+        { preserve: ['customerId'] },
+      ),
+      label: customer.name,
+    },
     { href: createHrefWithView('/brands', sp, 'brand'), label: 'ブランド' },
     {
       href: createHrefWithView(
@@ -851,7 +909,7 @@ function buildBrandHierarchy({ sp, currentView, pathname }: BuilderArgs): Hierar
     items: brand.strategies,
   })
 
-  return { breadcrumbs, sections, activeSection }
+  return { breadcrumbs, sections, activeSection, selection: { customer, brand } }
 }
 function buildProgramHierarchy({ sp, currentView, pathname }: BuilderArgs): HierarchyState {
   const allPrograms: Array<{ customer: CustomerAccount; brand: CustomerBrand; program: CustomerProgram }> = []
@@ -863,7 +921,13 @@ function buildProgramHierarchy({ sp, currentView, pathname }: BuilderArgs): Hier
     })
   })
 
-  const requestedProgramId = sp?.get('programId')
+  let requestedProgramId = sp?.get('programId')
+  if (!requestedProgramId && pathname.startsWith('/programs/')) {
+    const [, , candidate] = pathname.split('/')
+    if (candidate) {
+      requestedProgramId = candidate
+    }
+  }
   const fallback = allPrograms[0]
   const active = allPrograms.find(entry => entry.program.id === requestedProgramId) ?? fallback
   const { customer, brand, program } = active
@@ -936,6 +1000,29 @@ function buildProgramHierarchy({ sp, currentView, pathname }: BuilderArgs): Hier
   })
 
   const breadcrumbs: Crumb[] = [
+    { href: '/', label: 'ホーム' },
+    { href: createHrefWithView('/customers', sp, 'customer'), label: '顧客' },
+    {
+      href: createHrefWithView(
+        '/customers',
+        sp,
+        'customer',
+        { customerId: customer.id },
+        { preserve: ['customerId'] },
+      ),
+      label: customer.name,
+    },
+    { href: createHrefWithView('/brands', sp, 'brand'), label: 'ブランド' },
+    {
+      href: createHrefWithView(
+        '/brands',
+        sp,
+        'brand',
+        { brandId: brand.id },
+        { preserve: ['brandId'] },
+      ),
+      label: brand.name,
+    },
     { href: createHrefWithView('/programs', sp, 'program'), label: 'プログラム' },
     {
       href: createHrefWithView(
@@ -1000,7 +1087,7 @@ function buildProgramHierarchy({ sp, currentView, pathname }: BuilderArgs): Hier
     items: program.strategies,
   })
 
-  return { breadcrumbs, sections, activeSection }
+  return { breadcrumbs, sections, activeSection, selection: { customer, brand, program } }
 }
 const HIERARCHY_BUILDERS: Record<ViewId, HierarchyBuilder> = {
   projects: buildFallbackHierarchy(MODE_NAV_FALLBACK.projects),
@@ -1020,15 +1107,51 @@ function useNav(crumbsFromProps?: Crumb[]) {
   const builder = HIERARCHY_BUILDERS[currentView] ?? buildFallbackHierarchy([])
   const hierarchy = builder({ sp, currentView, pathname })
   const breadcrumbs = hierarchy.breadcrumbs.length ? hierarchy.breadcrumbs : crumbsFromProps ?? []
-  const hasMenu = hierarchy.sections.length > 0
+  const navigationSections = hierarchy.sections.filter(
+    (section): section is NavigationSection => section.type === 'navigation',
+  )
+  const detailSections = hierarchy.sections.filter(
+    (section): section is DetailSection => section.type !== 'navigation',
+  )
+  const navigationItems = navigationSections
+    .flatMap(section => section.items)
+    .map(item => ({
+      label: item.label,
+      description: item.description,
+      params: item.params,
+      href: item.href,
+      isActive: item.isActive,
+    }))
+  const hasMenu = navigationSections.length > 0
 
   return {
     modeOptions,
-    sections: hierarchy.sections,
+    navigationSections,
+    navigationItems,
+    detailSections,
     breadcrumbs,
     hasMenu,
     activeSection: hierarchy.activeSection,
+    selection: hierarchy.selection,
   }
+}
+
+type HierarchyContextValue = {
+  breadcrumbs: Crumb[]
+  activeSection: string | null
+  detailSections: DetailSection[]
+  navigationItems: NavigationItemSummary[]
+  selection: HierarchySelection
+}
+
+const HierarchyStateContext = React.createContext<HierarchyContextValue | null>(null)
+
+export function useHierarchyState(): HierarchyContextValue {
+  const context = React.useContext(HierarchyStateContext)
+  if (!context) {
+    throw new Error('useHierarchyState must be used within Shell')
+  }
+  return context
 }
 
 function statusLabel(status?: CollectionItem['status']) {
@@ -1046,198 +1169,228 @@ function statusLabel(status?: CollectionItem['status']) {
 }
 
 export function Shell({ children, crumbs }: { children: React.ReactNode; crumbs?: Crumb[] }) {
-  const { modeOptions, sections, breadcrumbs, hasMenu, activeSection } = useNav(crumbs)
+  const {
+    modeOptions,
+    navigationSections,
+    detailSections,
+    navigationItems,
+    breadcrumbs,
+    hasMenu,
+    activeSection,
+    selection,
+  } = useNav(crumbs)
   const totalRailWidth = ICON_RAIL_WIDTH + (hasMenu ? DEFAULT_MENU_WIDTH : 0)
 
-  const visibleSections = sections.filter(section => {
-    if (section.type === 'navigation') {
-      return true
-    }
-    if (!activeSection) {
-      return false
-    }
-    return section.sectionKey === activeSection
-  })
-
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <aside
-        className="fixed inset-y-0 left-0 z-40 flex border-r border-slate-200 bg-white shadow-sm"
-        style={{ width: totalRailWidth }}
-      >
-        <div className="flex w-20 flex-col border-r border-slate-100 bg-white">
-          <div className="flex h-14 items-center justify-center border-b border-slate-100">
-            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-indigo-600 font-semibold text-white">B</div>
-          </div>
-          <nav className="flex-1 space-y-3 py-4">
-            {modeOptions.map(option => {
-              const Icon = option.icon
-              return (
-                <Link
-                  key={option.id}
-                  href={option.href}
-                  aria-current={option.isActive ? 'page' : undefined}
-                  className={clsx(
-                    'mx-auto flex h-12 w-12 items-center justify-center rounded-2xl text-slate-500 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200',
-                    option.isActive
-                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
-                      : 'bg-slate-100 hover:bg-indigo-100 hover:text-indigo-700',
-                  )}
-                >
-                  <Icon className="h-5 w-5" />
-                  <span className="sr-only">{option.label}</span>
-                </Link>
-              )
-            })}
-          </nav>
-        </div>
-        <div
-          className={clsx(
-            'flex h-full flex-1 flex-col transition-opacity duration-200',
-            hasMenu ? 'opacity-100' : 'pointer-events-none opacity-0',
-          )}
-          style={{ width: hasMenu ? DEFAULT_MENU_WIDTH : 0 }}
+    <HierarchyStateContext.Provider
+      value={{ breadcrumbs, activeSection, detailSections, navigationItems, selection }}
+    >
+      <div className="min-h-screen bg-slate-50 text-slate-900">
+        <aside
+          className="fixed inset-y-0 left-0 z-40 flex border-r border-slate-200 bg-white shadow-sm"
+          style={{ width: totalRailWidth }}
         >
-          <div className="flex h-full flex-col overflow-hidden border-l border-slate-100 bg-white">
-            <div className="border-b border-slate-100 px-5 py-4">
-              <Breadcrumbs crumbs={breadcrumbs} />
+          <div className="flex w-20 flex-col border-r border-slate-100 bg-white">
+            <div className="flex h-14 items-center justify-center border-b border-slate-100">
+              <div className="grid h-9 w-9 place-items-center rounded-2xl bg-indigo-600 font-semibold text-white">B</div>
             </div>
-            <div className="flex-1 space-y-6 overflow-y-auto px-4 py-4">
-              {visibleSections.map(section => {
-                if (section.type === 'navigation') {
-                  return (
-                    <section key={section.id} className="space-y-3">
-                      <div className="space-y-1">
-                        <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">{section.title}</h2>
-                        {section.description ? (
-                          <p className="text-sm text-slate-600">{section.description}</p>
-                        ) : null}
-                      </div>
-                      <div className="space-y-2">
-                        {section.items.map(item => {
-                          const Icon = item.icon
-                          const keySuffix = item.params
-                            ? Object.entries(item.params)
-                                .map(([k, v]) => `${k}:${v}`)
-                                .join('|')
-                            : 'root'
-                          return (
-                            <Link
-                              key={`${item.path}-${keySuffix}`}
-                              href={item.href}
-                              aria-current={item.isActive ? 'page' : undefined}
+            <nav className="flex-1 space-y-3 py-4">
+              {modeOptions.map(option => {
+                const Icon = option.icon
+                return (
+                  <Link
+                    key={option.id}
+                    href={option.href}
+                    aria-current={option.isActive ? 'page' : undefined}
+                    className={clsx(
+                      'mx-auto flex h-12 w-12 items-center justify-center rounded-2xl text-slate-500 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200',
+                      option.isActive
+                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
+                        : 'bg-slate-100 hover:bg-indigo-100 hover:text-indigo-700',
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="sr-only">{option.label}</span>
+                  </Link>
+                )
+              })}
+            </nav>
+          </div>
+          <div
+            className={clsx(
+              'flex h-full flex-1 flex-col transition-opacity duration-200',
+              hasMenu ? 'opacity-100' : 'pointer-events-none opacity-0',
+            )}
+            style={{ width: hasMenu ? DEFAULT_MENU_WIDTH : 0 }}
+          >
+            <div className="flex h-full flex-col overflow-hidden border-l border-slate-100 bg-white">
+              <div className="border-b border-slate-100 px-5 py-4">
+                <Breadcrumbs crumbs={breadcrumbs} />
+              </div>
+              <div className="flex-1 space-y-6 overflow-y-auto px-4 py-4">
+                {navigationSections.map(section => (
+                  <section key={section.id} className="space-y-3">
+                    <div className="space-y-1">
+                      <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">{section.title}</h2>
+                      {section.description ? (
+                        <p className="text-sm text-slate-600">{section.description}</p>
+                      ) : null}
+                    </div>
+                    <div className="space-y-2">
+                      {section.items.map(item => {
+                        const Icon = item.icon
+                        const keySuffix = item.params
+                          ? Object.entries(item.params)
+                              .map(([k, v]) => `${k}:${v}`)
+                              .join('|')
+                          : 'root'
+                        return (
+                          <Link
+                            key={`${item.path}-${keySuffix}`}
+                            href={item.href}
+                            aria-current={item.isActive ? 'page' : undefined}
+                            className={clsx(
+                              'group flex items-start gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200',
+                              item.isActive
+                                ? 'border-indigo-200 bg-indigo-50 text-indigo-700 shadow-sm'
+                                : 'hover:border-indigo-200 hover:bg-indigo-50/70 hover:text-indigo-700',
+                            )}
+                          >
+                            <span
                               className={clsx(
-                                'group flex items-start gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200',
+                                'mt-0.5 grid h-9 w-9 place-items-center rounded-xl border border-transparent bg-slate-100 text-slate-600 transition-colors duration-150',
                                 item.isActive
-                                  ? 'border-indigo-200 bg-indigo-50 text-indigo-700 shadow-sm'
-                                  : 'hover:border-indigo-200 hover:bg-indigo-50/70 hover:text-indigo-700',
+                                  ? 'border-indigo-200 bg-indigo-600 text-white shadow-sm'
+                                  : 'group-hover:bg-indigo-100 group-hover:text-indigo-700',
                               )}
                             >
-                              <span
-                                className={clsx(
-                                  'mt-0.5 grid h-9 w-9 place-items-center rounded-xl border border-transparent bg-slate-100 text-slate-600 transition-colors duration-150',
-                                  item.isActive
-                                    ? 'border-indigo-200 bg-indigo-600 text-white shadow-sm'
-                                    : 'group-hover:bg-indigo-100 group-hover:text-indigo-700',
-                                )}
-                              >
-                                <Icon className="h-4 w-4" />
-                              </span>
-                              <span className="flex-1">
-                                <span className="block text-sm font-semibold leading-tight">{item.label}</span>
-                                {item.description ? (
-                                  <span className="mt-1 block text-xs text-slate-500">{item.description}</span>
-                                ) : null}
-                              </span>
-                            </Link>
-                          )
-                        })}
-                      </div>
-                    </section>
-                  )
-                }
-
-                if (section.type === 'context') {
-                  return (
-                    <section key={section.id} className="space-y-3">
-                      <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">{section.title}</h2>
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50">
-                        <dl className="divide-y divide-slate-200">
-                          {section.entries.map(entry => (
-                            <div key={`${entry.label}-${entry.value}`} className="flex flex-col gap-1 px-4 py-3">
-                              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">{entry.label}</dt>
-                              <dd className="text-sm font-medium text-slate-800">{entry.value}</dd>
-                              {entry.meta ? (
-                                <dd className="text-xs text-slate-500">{entry.meta}</dd>
+                              <Icon className="h-4 w-4" />
+                            </span>
+                            <span className="flex-1">
+                              <span className="block text-sm font-semibold leading-tight">{item.label}</span>
+                              {item.description ? (
+                                <span className="mt-1 block text-xs text-slate-500">{item.description}</span>
                               ) : null}
-                            </div>
-                          ))}
-                        </dl>
-                      </div>
-                    </section>
-                  )
-                }
-
-                if (section.type === 'collection') {
-                  return (
-                    <section key={section.id} className="space-y-3">
-                      <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">{section.title}</h2>
-                      {section.items.length ? (
-                        <ul className="space-y-2">
-                          {section.items.map(item => {
-                            const content = (
-                              <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 transition-colors duration-150 group-hover:border-indigo-200 group-hover:bg-indigo-50/40">
-                                <div className="flex items-start justify-between gap-3">
-                                  <div>
-                                    <p className="text-sm font-semibold text-slate-800">{item.label}</p>
-                                    {item.meta ? <p className="text-xs text-slate-500">{item.meta}</p> : null}
-                                  </div>
-                                  {item.status ? (
-                                    <span
-                                      className={clsx(
-                                        'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
-                                        statusStyles(item.status),
-                                      )}
-                                    >
-                                      {statusLabel(item.status)}
-                                    </span>
-                                  ) : null}
-                                </div>
-                              </div>
-                            )
-
-                            if (item.href) {
-                              return (
-                                <li key={item.id}>
-                                  <Link
-                                    href={item.href}
-                                    className="group block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200"
-                                  >
-                                    {content}
-                                  </Link>
-                                </li>
-                              )
-                            }
-
-                            return <li key={item.id}>{content}</li>
-                          })}
-                        </ul>
-                      ) : (
-                        <p className="text-xs text-slate-500">{section.emptyText}</p>
-                      )}
-                    </section>
-                  )
-                }
-
-                return null
-              })}
+                            </span>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  </section>
+                ))}
+              </div>
             </div>
           </div>
+        </aside>
+        <div className="min-h-screen" style={{ marginLeft: totalRailWidth }}>
+          <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
         </div>
-      </aside>
-      <div className="min-h-screen" style={{ marginLeft: totalRailWidth }}>
-        <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
       </div>
-    </div>
+    </HierarchyStateContext.Provider>
+  )
+}
+
+export function HierarchyDetail({
+  emptyState,
+}: {
+  emptyState?: React.ReactNode
+}): JSX.Element {
+  const { activeSection, detailSections, navigationItems, selection, breadcrumbs } = useHierarchyState()
+
+  const focusName = selection.program?.name ?? selection.brand?.name ?? selection.customer?.name ?? '選択中の項目'
+  const hierarchyTrail = [selection.customer?.name, selection.brand?.name, selection.program?.name]
+    .filter(Boolean)
+    .join(' › ')
+  const activeDetail = detailSections.find(section => section.sectionKey === activeSection) ?? null
+  const activeNav = navigationItems.find(item => item.params?.section === activeSection)
+  const sectionTitle = activeDetail?.title ?? activeNav?.label ?? 'セクション'
+  const sectionDescription = activeNav?.description
+
+  const renderContext = (section: Extract<DetailSection, { type: 'context' }>) => {
+    if (!section.entries.length) {
+      return (
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-white/60 p-6 text-center text-sm text-slate-500">
+          コンテキスト情報はまだ登録されていません。
+        </div>
+      )
+    }
+    return (
+      <div className="grid gap-4 md:grid-cols-2">
+        {section.entries.map(entry => (
+          <div key={`${entry.label}-${entry.value}`} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">{entry.label}</div>
+            <div className="mt-1 text-base font-semibold text-slate-900">{entry.value}</div>
+            {entry.meta ? <div className="text-xs text-slate-500">{entry.meta}</div> : null}
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  const renderCollection = (section: Extract<DetailSection, { type: 'collection' }>) => {
+    if (!section.items.length) {
+      return (
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-white/60 p-6 text-center text-sm text-slate-500">
+          {section.emptyText ?? 'まだデータがありません'}
+        </div>
+      )
+    }
+
+    return (
+      <ul className="grid gap-3">
+        {section.items.map(item => (
+          <li key={item.id}>
+            <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">{item.label}</p>
+                  {item.meta ? <p className="text-xs text-slate-500">{item.meta}</p> : null}
+                </div>
+                {item.status ? (
+                  <span className={clsx('inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium', statusStyles(item.status))}>
+                    {statusLabel(item.status)}
+                  </span>
+                ) : null}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  let body: React.ReactNode = null
+  if (activeDetail) {
+    if (activeDetail.type === 'context') {
+      body = renderContext(activeDetail)
+    } else if (activeDetail.type === 'collection') {
+      body = renderCollection(activeDetail)
+    }
+  } else {
+    body =
+      emptyState ?? (
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-white/60 p-6 text-center text-sm text-slate-500">
+          メニューからセクションを選択してください。
+        </div>
+      )
+  }
+
+  return (
+    <section className="space-y-6">
+      <header className="space-y-2">
+        <div className="text-xs font-semibold uppercase tracking-wide text-indigo-500">現在のフォーカス</div>
+        <h1 className="text-2xl font-semibold text-slate-900">{focusName}</h1>
+        <div className="text-sm text-slate-500">
+          {hierarchyTrail || breadcrumbs.map(crumb => crumb.label).join(' › ')}
+        </div>
+      </header>
+      <div className="space-y-3">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">{sectionTitle}</h2>
+          {sectionDescription ? <p className="text-sm text-slate-500">{sectionDescription}</p> : null}
+        </div>
+        {body}
+      </div>
+    </section>
   )
 }
