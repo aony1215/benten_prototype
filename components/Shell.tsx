@@ -470,7 +470,7 @@ function buildFallbackHierarchy(definitions: ModeNavDefinition[]): HierarchyBuil
   }
 }
 
-function pickCustomer(sp: ReadonlyURLSearchParams | null, pathname: string) {
+function pickCustomer(sp: ReadonlyURLSearchParams | null, pathname: string): CustomerAccount | null {
   let requestedId = sp?.get('customerId')
   if (!requestedId && pathname.startsWith('/customers/')) {
     const [, , candidate] = pathname.split('/')
@@ -478,11 +478,19 @@ function pickCustomer(sp: ReadonlyURLSearchParams | null, pathname: string) {
       requestedId = candidate
     }
   }
+  if (!requestedId) {
+    return null
+  }
   const customer = CUSTOMER_GRAPH.find(account => account.id === requestedId) ?? CUSTOMER_GRAPH[0]
   return customer
 }
 
-function findBrand(customer: CustomerAccount, sp: ReadonlyURLSearchParams | null, pathname: string) {
+function findBrand(
+  customer: CustomerAccount | null,
+  sp: ReadonlyURLSearchParams | null,
+  pathname: string,
+): CustomerBrand | null {
+  if (!customer) return null
   let requestedId = sp?.get('brandId')
   if (!requestedId && pathname.startsWith('/brands/')) {
     const [, , candidate] = pathname.split('/')
@@ -550,13 +558,171 @@ function attachCollection(
 }
 function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): HierarchyState {
   const customer = pickCustomer(sp, pathname)
+
+  if (!customer) {
+    const activeSection = sp?.get('section') ?? 'list'
+    const navDefinitions: ModeNavDefinition[] = [
+      {
+        path: '/customers',
+        label: '顧客一覧',
+        description: 'アカウント全体をすばやく俯瞰',
+        icon: Users2,
+        params: { section: 'list' },
+      },
+      {
+        path: '/customers',
+        label: 'コンテキスト',
+        description: '顧客ポートフォリオの背景と注力領域',
+        icon: Info,
+        params: { section: 'context' },
+      },
+      {
+        path: '/customers',
+        label: 'KPIダッシュボード',
+        description: 'NRR や ARR のトレンドを確認',
+        icon: BarChart3,
+        params: { section: 'kpi' },
+      },
+      {
+        path: '/customers',
+        label: '成果物',
+        description: '横断的な主要成果物のハイライト',
+        icon: FilePenLine,
+        params: { section: 'portfolio-deliverables' },
+      },
+      {
+        path: '/customers',
+        label: 'コミュニケーション',
+        description: '定例会議や重要なタッチポイント',
+        icon: MessageSquare,
+        params: { section: 'portfolio-communications' },
+      },
+      {
+        path: '/customers',
+        label: '戦略',
+        description: '顧客戦略の優先テーマ',
+        icon: Target,
+        params: { section: 'portfolio-strategies' },
+      },
+    ]
+
+    const items = buildModeNavItems(navDefinitions, sp, currentView, pathname, { section: activeSection })
+    const breadcrumbs: Crumb[] = [
+      { href: '/', label: 'ホーム' },
+      { href: createHrefWithView('/customers', sp, 'customer'), label: '顧客' },
+    ]
+
+    const sections: HierarchySection[] = []
+    if (items.length) {
+      sections.push({
+        type: 'navigation',
+        id: 'customer-portfolio-navigation',
+        title: '顧客ポートフォリオ',
+        description: '顧客全体のハイライトにアクセス',
+        items,
+      })
+    }
+
+    const listItems: CollectionItem[] = CUSTOMER_GRAPH.map(account => ({
+      id: account.id,
+      label: account.name,
+      meta: `${account.industry} / ${account.region}`,
+      status: 'active',
+      href: createHrefWithView('/customers', sp, 'customer', {
+        customerId: account.id,
+        section: 'overview',
+      }),
+    }))
+
+    sections.push({
+      type: 'collection',
+      id: 'customer-portfolio-list',
+      title: '顧客一覧',
+      sectionKey: 'list',
+      emptyText: '顧客がまだ登録されていません',
+      items: listItems,
+    })
+
+    const portfolioContext: ContextEntry[] = [
+      { label: '総アカウント数', value: `${CUSTOMER_GRAPH.length}社` },
+      { label: '主なセグメント', value: 'エンタープライズ / ミッドマーケット' },
+      { label: '注力地域', value: '日本 / 北米 / APAC' },
+      { label: '平均ヘルススコア', value: '8.1', meta: 'リスク顧客 3社' },
+    ]
+
+    sections.push({
+      type: 'context',
+      id: 'customer-portfolio-context',
+      title: '顧客ポートフォリオのコンテキスト',
+      sectionKey: 'context',
+      entries: portfolioContext,
+    })
+
+    const kpiHighlights: CollectionItem[] = [
+      { id: 'portfolio-kpi-1', label: 'NRR 116%', meta: '目標 112% / 前月比 +2pt', status: 'active' },
+      { id: 'portfolio-kpi-2', label: 'ARR 8.4B円', meta: '前年同期比 +18%', status: 'active' },
+      { id: 'portfolio-kpi-3', label: '顧客満足度 4.6', meta: '調査サンプル 210 件', status: 'planning' },
+    ]
+
+    sections.push({
+      type: 'collection',
+      id: 'customer-portfolio-kpi',
+      title: 'KPIダッシュボード',
+      sectionKey: 'kpi',
+      emptyText: 'KPIデータはまだ登録されていません',
+      items: kpiHighlights,
+    })
+
+    const portfolioDeliverables: CollectionItem[] = [
+      { id: 'portfolio-deliverable-1', label: 'Q2 エグゼクティブレビュー テンプレート', meta: '更新日 2024/06/20', status: 'delivered' },
+      { id: 'portfolio-deliverable-2', label: 'オンボーディング標準パッケージ', meta: 'β版 / 2024/07/05', status: 'active' },
+    ]
+
+    sections.push({
+      type: 'collection',
+      id: 'customer-portfolio-deliverables',
+      title: '成果物',
+      sectionKey: 'portfolio-deliverables',
+      emptyText: '横断的な成果物はまだ登録されていません',
+      items: portfolioDeliverables,
+    })
+
+    const portfolioCommunications: CollectionItem[] = [
+      { id: 'portfolio-comm-1', label: '経営層向けサクセスレビュー', meta: '次回 2024/07/18', status: 'active' },
+      { id: 'portfolio-comm-2', label: '顧客ワークショップシリーズ', meta: '全4回 / 進行中', status: 'planning' },
+    ]
+
+    sections.push({
+      type: 'collection',
+      id: 'customer-portfolio-communications',
+      title: 'コミュニケーション',
+      sectionKey: 'portfolio-communications',
+      emptyText: '共有のコミュニケーションはまだ登録されていません',
+      items: portfolioCommunications,
+    })
+
+    const portfolioStrategies: CollectionItem[] = [
+      { id: 'portfolio-strategy-1', label: 'カスタマーエンゲージメント強化プラン', meta: 'フェーズ2 / ROI 1.3x', status: 'active' },
+      { id: 'portfolio-strategy-2', label: 'サクセスオペレーション最適化', meta: '検討中', status: 'planning' },
+    ]
+
+    sections.push({
+      type: 'collection',
+      id: 'customer-portfolio-strategies',
+      title: '戦略',
+      sectionKey: 'portfolio-strategies',
+      emptyText: '横断的な戦略ドキュメントはまだ登録されていません',
+      items: portfolioStrategies,
+    })
+
+    return { breadcrumbs, sections, activeSection, selection: {} }
+  }
+
   const brand = findBrand(customer, sp, pathname)
   const program = findProgram(brand, sp, pathname)
   const activeSection = sp?.get('section') ?? 'context'
 
-  const navDefinitions: ModeNavDefinition[] = []
-
-  navDefinitions.push(
+  const navDefinitions: ModeNavDefinition[] = [
     {
       path: '/customers',
       label: 'アカウント概要',
@@ -571,7 +737,7 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
       icon: Sparkles,
       params: { section: 'stakeholders', customerId: customer.id },
     },
-  )
+  ]
 
   if (brand) {
     navDefinitions.push({
@@ -640,7 +806,9 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
   )
 
   const items = buildModeNavItems(navDefinitions, sp, currentView, pathname, {
-    ...focusParams,
+    customerId: customer.id,
+    brandId: brand?.id,
+    programId: program?.id,
     section: activeSection,
   })
 
@@ -1297,7 +1465,9 @@ export function HierarchyDetail({
 }): JSX.Element {
   const { activeSection, detailSections, navigationItems, selection, breadcrumbs } = useHierarchyState()
 
-  const focusName = selection.program?.name ?? selection.brand?.name ?? selection.customer?.name ?? '選択中の項目'
+  const fallbackFocus = breadcrumbs[breadcrumbs.length - 1]?.label ?? '選択中の項目'
+  const focusName =
+    selection.program?.name ?? selection.brand?.name ?? selection.customer?.name ?? fallbackFocus
   const hierarchyTrail = [selection.customer?.name, selection.brand?.name, selection.program?.name]
     .filter(Boolean)
     .join(' › ')
