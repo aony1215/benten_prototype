@@ -4,25 +4,29 @@ import { Shell } from '@/components/Shell'
 import { AddButton } from '@/components/ui/AddButton'
 
 const brands = [
-  { id: 'brd_shoestore', name: 'ShoeStore', account: 'Global Retail Inc.' },
-  { id: 'brd_gadgets', name: 'Gadgets+', account: 'Global Retail Inc.' },
-  { id: 'brd_futuretech', name: 'FutureTech Gear', account: 'Tech Starter' },
+  { id: 'brand-shoestore', name: 'ShoeStore', account: 'A社（Global Retail Inc.）' },
+  { id: 'brand-gadgets', name: 'Gadgets+', account: 'A社（Global Retail Inc.）' },
+  { id: 'brand-futuretech', name: 'FutureTech Gear', account: 'B社（Tech Starter）' },
 ]
 
 export default function Brands() {
   return (
     <Shell crumbs={[{ href: '/brands', label: 'ブランド一覧' }]}>
-      <div className="flex items-center justify-between mb-3">
-        <h1 className="font-semibold">ブランド一覧</h1>
-        <AddButton href="/brands/new">新規登録</AddButton>
-      </div>
-      <div className="grid gap-3">
-        {brands.map(b => (
-          <Link key={b.id} href={`/brands/${b.id}`} className="card p-4 card-hover">
-            <div className="font-medium">{b.name}</div>
-            <div className="text-sm text-slate-500">{b.account}</div>
-          </Link>
-        ))}
+      <div className="space-y-8">
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-900">ブランド一覧</h2>
+            <AddButton href="/brands/new">新規登録</AddButton>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            {brands.map(b => (
+              <Link key={b.id} href={`/brands/${b.id}`} className="card card-hover flex flex-col gap-1 p-4">
+                <div className="font-medium text-slate-900">{b.name}</div>
+                <div className="text-sm text-slate-500">{b.account}</div>
+              </Link>
+            ))}
+          </div>
+        </section>
       </div>
     </Shell>
   )
