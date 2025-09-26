@@ -564,13 +564,6 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
     const navDefinitions: ModeNavDefinition[] = [
       {
         path: '/customers',
-        label: '顧客一覧',
-        description: 'アカウント全体をすばやく俯瞰',
-        icon: Users2,
-        params: { section: 'list' },
-      },
-      {
-        path: '/customers',
         label: 'コンテキスト',
         description: '顧客ポートフォリオの背景と注力領域',
         icon: Info,
