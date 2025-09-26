@@ -560,15 +560,9 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
   const customer = pickCustomer(sp, pathname)
 
   if (!customer) {
-    const activeSection = sp?.get('section') ?? 'list'
+    const requestedSection = sp?.get('section')
+    const activeSection = requestedSection && requestedSection !== 'list' ? requestedSection : 'context'
     const navDefinitions: ModeNavDefinition[] = [
-      {
-        path: '/customers',
-        label: '顧客一覧',
-        description: '登録済み顧客を俯瞰',
-        icon: Users2,
-        params: { section: 'list' },
-      },
       {
         path: '/customers',
         label: 'コンテキスト',
@@ -910,15 +904,9 @@ function buildBrandHierarchy({ sp, currentView, pathname }: BuilderArgs): Hierar
   }
 
   if (!requestedBrandId) {
-    const activeSection = sp?.get('section') ?? 'list'
+    const requestedSection = sp?.get('section')
+    const activeSection = requestedSection && requestedSection !== 'list' ? requestedSection : 'context'
     const navDefinitions: ModeNavDefinition[] = [
-      {
-        path: '/brands',
-        label: 'ブランド一覧',
-        description: '登録済みブランドを俯瞰',
-        icon: Landmark,
-        params: { section: 'list' },
-      },
       {
         path: '/brands',
         label: 'コンテキスト',
@@ -1219,15 +1207,9 @@ function buildProgramHierarchy({ sp, currentView, pathname }: BuilderArgs): Hier
   }
 
   if (!requestedProgramId) {
-    const activeSection = sp?.get('section') ?? 'list'
+    const requestedSection = sp?.get('section')
+    const activeSection = requestedSection && requestedSection !== 'list' ? requestedSection : 'context'
     const navDefinitions: ModeNavDefinition[] = [
-      {
-        path: '/programs',
-        label: 'プログラム一覧',
-        description: '進行中の取り組みを俯瞰',
-        icon: Layers,
-        params: { section: 'list' },
-      },
       {
         path: '/programs',
         label: 'コンテキスト',
