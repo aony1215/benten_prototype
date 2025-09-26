@@ -564,6 +564,13 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
     const navDefinitions: ModeNavDefinition[] = [
       {
         path: '/customers',
+        label: '顧客一覧',
+        description: '登録済み顧客を俯瞰',
+        icon: Users2,
+        params: { section: 'list' },
+      },
+      {
+        path: '/customers',
         label: 'コンテキスト',
         description: '顧客ポートフォリオの背景と注力領域',
         icon: Info,
@@ -614,26 +621,6 @@ function buildCustomerHierarchy({ sp, currentView, pathname }: BuilderArgs): Hie
         items,
       })
     }
-
-    const listItems: CollectionItem[] = CUSTOMER_GRAPH.map(account => ({
-      id: account.id,
-      label: account.name,
-      meta: `${account.industry} / ${account.region}`,
-      status: 'active',
-      href: createHrefWithView('/customers', sp, 'customer', {
-        customerId: account.id,
-        section: 'overview',
-      }),
-    }))
-
-    sections.push({
-      type: 'collection',
-      id: 'customer-portfolio-list',
-      title: '顧客一覧',
-      sectionKey: 'list',
-      emptyText: '顧客がまだ登録されていません',
-      items: listItems,
-    })
 
     const portfolioContext: ContextEntry[] = [
       { label: '総アカウント数', value: `${CUSTOMER_GRAPH.length}社` },
@@ -981,28 +968,6 @@ function buildBrandHierarchy({ sp, currentView, pathname }: BuilderArgs): Hierar
       })
     }
 
-    const listItems: CollectionItem[] = allBrands.map(({ customer, brand }) => ({
-      id: brand.id,
-      label: brand.name,
-      meta: `${customer.name} / ${brand.keyMarkets}`,
-      status: brand.health === '注意' ? 'alert' : 'active',
-      href: createHrefWithView(
-        '/brands',
-        sp,
-        'brand',
-        { brandId: brand.id, section: 'overview' },
-      ),
-    }))
-
-    sections.push({
-      type: 'collection',
-      id: 'brand-portfolio-list',
-      title: 'ブランド一覧',
-      sectionKey: 'list',
-      emptyText: 'ブランドがまだ登録されていません',
-      items: listItems,
-    })
-
     const relatedCustomers = new Set(allBrands.map(entry => entry.customer.id)).size
     const activePrograms = allBrands.reduce((total, entry) => total + entry.brand.programs.length, 0)
     const attentionBrands = allBrands.filter(entry => entry.brand.health === '注意').length
@@ -1311,28 +1276,6 @@ function buildProgramHierarchy({ sp, currentView, pathname }: BuilderArgs): Hier
         items,
       })
     }
-
-    const listItems: CollectionItem[] = allPrograms.map(({ customer, brand, program }) => ({
-      id: program.id,
-      label: program.name,
-      meta: `${brand.name} / ${customer.name}`,
-      status: program.status.includes('計画') ? 'planning' : 'active',
-      href: createHrefWithView(
-        '/programs',
-        sp,
-        'program',
-        { programId: program.id, section: 'overview' },
-      ),
-    }))
-
-    sections.push({
-      type: 'collection',
-      id: 'program-portfolio-list',
-      title: 'プログラム一覧',
-      sectionKey: 'list',
-      emptyText: 'プログラムがまだ登録されていません',
-      items: listItems,
-    })
 
     const totalBrands = new Set(allPrograms.map(entry => entry.brand.id)).size
     const totalCustomers = new Set(allPrograms.map(entry => entry.customer.id)).size
