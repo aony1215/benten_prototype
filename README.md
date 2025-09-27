@@ -21,5 +21,16 @@ pnpm dev # http://localhost:3000
 - `/programs` → `/programs/:id`
 - `/playbooks`（一覧）
 - `/settings`（アカウント設定）
+- `/report` Immersive Report Builder（DuckDB風データ分析体験）
+
+## Immersive Report Builder（β）
+
+- 左から順に「データ取り込み → フィールド選択 → 可視化 → Tips → Export」を一画面で完結。
+- CSV/Parquet(スタブ) ドロップ or サンプルデータ読込で即時集計。
+- フィールドはドラッグ＆ドロップでディメンション／メジャーへ配置、SQL文字列も自動生成。
+- Diffトグルで直前スナップショットと並列比較。
+- Tips(虎の巻) は KPI × Purpose × モデル構成で推奨アクションを提示し、ワンクリック適用。
+- Export API（HTML/PDF/PPTX）は Next.js Route Handler 上で生成（PDF/PPTX は軽量スタブ実装）。
+- IndexedDB が使えない環境でも localStorage にスナップショットを保持し、オフライン再開が可能。
 
 > どのページでも `?v=customer|brand|program` が付与され、左メニューが同期します。

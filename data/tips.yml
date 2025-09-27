@@ -1,0 +1,57 @@
+[
+  {
+    "id": "qbr-channel-stack",
+    "when": { "purpose": "QBR", "dimsContains": ["channel"] },
+    "suggest": { "action": "sort", "payload": { "by": "Spend", "dir": "desc" }, "label": "Sort channels by spend" }
+  },
+  {
+    "id": "proposal-add-revenue",
+    "when": { "purpose": "Proposal" },
+    "suggest": { "action": "addMeasure", "payload": { "name": "Revenue", "agg": "sum" }, "label": "Bring revenue alongside spend" }
+  },
+  {
+    "id": "incident-limit",
+    "when": { "purpose": "Incident" },
+    "suggest": { "action": "setLimit", "payload": { "limit": 10 }, "label": "Focus on top 10 rows" }
+  },
+  {
+    "id": "ctr-channel-bin",
+    "when": { "kpi": "ctr" },
+    "suggest": { "action": "addDimension", "payload": { "name": "Date" }, "label": "Add date granularity to track CTR trends" }
+  },
+  {
+    "id": "conversion-rate",
+    "when": { "dimsContains": ["channel"] },
+    "suggest": { "action": "addMeasure", "payload": { "name": "Conversions", "agg": "sum" }, "label": "Plot conversions along with spend" }
+  },
+  {
+    "id": "delta-view",
+    "when": { "purpose": "QBR" },
+    "suggest": { "action": "enableDiff", "label": "Compare with previous run" }
+  },
+  {
+    "id": "incident-comment",
+    "when": { "purpose": "Incident" },
+    "suggest": { "action": "addComment", "payload": { "text": "Document root cause and mitigation" }, "label": "Add incident commentary" }
+  },
+  {
+    "id": "proposal-highlight",
+    "when": { "purpose": "Proposal", "dimsContains": ["channel"] },
+    "suggest": { "action": "highlight", "payload": { "field": "Channel" }, "label": "Highlight winning channel" }
+  },
+  {
+    "id": "qbr-log-scale",
+    "when": { "purpose": "QBR" },
+    "suggest": { "action": "setScale", "payload": { "scale": "log" }, "label": "Consider log scale for spend" }
+  },
+  {
+    "id": "proposal-limit",
+    "when": { "purpose": "Proposal" },
+    "suggest": { "action": "setLimit", "payload": { "limit": 5 }, "label": "Keep proposal concise (top 5)" }
+  },
+  {
+    "id": "incident-channel",
+    "when": { "purpose": "Incident" },
+    "suggest": { "action": "addDimension", "payload": { "name": "Channel" }, "label": "Slice incidents by channel" }
+  }
+]

@@ -1,0 +1,46 @@
+[
+  {
+    "id": "spend",
+    "title": "Total Spend",
+    "measure": { "name": "Spend", "agg": "sum", "expr": "spend", "format": "currency" },
+    "dimensions": [
+      { "name": "Channel", "expr": "channel" },
+      { "name": "Date", "expr": "date" }
+    ]
+  },
+  {
+    "id": "ctr",
+    "title": "Click Through Rate",
+    "measure": { "name": "CTR", "agg": "avg", "expr": "(clicks / impressions) * 100", "format": "pct" },
+    "dimensions": [
+      { "name": "Channel", "expr": "channel" },
+      { "name": "Date", "expr": "date" }
+    ]
+  },
+  {
+    "id": "impressions",
+    "title": "Impressions",
+    "measure": { "name": "Impressions", "agg": "sum", "expr": "impressions", "format": "int" },
+    "dimensions": [
+      { "name": "Channel", "expr": "channel" },
+      { "name": "Date", "expr": "date" }
+    ]
+  },
+  {
+    "id": "conversions",
+    "title": "Conversions",
+    "measure": { "name": "Conversions", "agg": "sum", "expr": "conversions", "format": "int" },
+    "dimensions": [
+      { "name": "Channel", "expr": "channel" },
+      { "name": "Date", "expr": "date" }
+    ]
+  },
+  {
+    "id": "cpa",
+    "title": "Cost per Acquisition",
+    "measure": { "name": "CPA", "agg": "avg", "expr": "conversions === 0 ? 0 : spend / conversions", "format": "currency" },
+    "dimensions": [
+      { "name": "Channel", "expr": "channel" }
+    ]
+  }
+]
