@@ -17,7 +17,11 @@ const stepComponents = {
   output: <ExportBar />,
 } as const;
 
-export const ReportWizard = () => {
+type ReportWizardProps = {
+  variant?: 'page' | 'embedded';
+};
+
+export const ReportWizard = ({ variant = 'page' }: ReportWizardProps) => {
   const {
     state: { activeStep, dataset, model, result, tips, isRunning },
     dispatch,
@@ -66,15 +70,30 @@ export const ReportWizard = () => {
     dispatch({ type: 'setStep', step: prev });
   };
 
+  const containerClass =
+    variant === 'page'
+      ? 'mx-auto flex max-w-5xl flex-col gap-6 px-6 py-8'
+      : 'flex flex-col gap-4';
+
+  const panelClass =
+    variant === 'page'
+      ? 'rounded-3xl border border-slate-200 bg-white p-6 shadow-sm'
+      : 'rounded-2xl border border-slate-200 bg-white p-4 shadow-sm';
+
+  const footerClass =
+    variant === 'page'
+      ? 'flex flex-col gap-3 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between'
+      : 'flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between';
+
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-8">
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <main className={containerClass}>
+      <div className={panelClass}>
         <p className="text-xs font-semibold uppercase text-slate-400">STEP {stepIndex + 1}</p>
         <h2 className="mt-2 text-xl font-semibold text-slate-900">{currentStep.title}</h2>
         <p className="mt-1 text-sm text-slate-500">{currentStep.subtitle}</p>
       </div>
       <div>{stepComponents[activeStep]}</div>
-      <div className="flex flex-col gap-3 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between">
+      <div className={footerClass}>
         <p className="text-sm text-slate-600">
           {isLastStep
             ? 'おつかれさまでした。必要に応じて書き出しメニューをご利用ください。'
