@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import type { Route } from 'next'
 import { useMemo } from 'react'
 
 import { Shell } from '@/components/Shell'
@@ -113,7 +114,7 @@ export default function MyProjects() {
               <div>
                 <div className="text-xs font-medium uppercase tracking-wide text-slate-500">{config.groupLabel}</div>
                 <Link
-                  href={group.href}
+                  href={group.href as Route}
                   className="text-lg font-semibold text-slate-900 transition-colors hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200"
                 >
                   {group.label}
@@ -125,7 +126,7 @@ export default function MyProjects() {
               {group.projects.map(project => (
                 <Link
                   key={project.id}
-                  href={`/projects/${project.id}`}
+                  href={`/projects/${project.id}` as Route}
                   className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2 text-sm transition hover:-translate-y-0.5 hover:border-indigo-200 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200"
                 >
                   <div>
