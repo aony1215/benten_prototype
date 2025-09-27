@@ -66,7 +66,6 @@ export default function NewCustomer() {
   const total = STEPS.length
   const nextDisabled =
     (current.key === 'info' && (!info.company || !info.website)) ||
-    (current.key === 'choose' && !method) ||
     (current.key === 'playbooks' && !chosenPB)
 
   return (

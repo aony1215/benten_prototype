@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import type { Route } from 'next'
 import { Home, ChevronRight } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -11,7 +12,9 @@ export function Breadcrumbs({ crumbs }: { crumbs?: Crumb[] }) {
         <ol className="flex items-center gap-1">
           <li className="inline-flex items-center gap-1">
             <Home className="w-4 h-4 text-slate-400" />
-            <Link href="/" className="hover:underline">ホーム</Link>
+            <Link href={'/' as Route} className="hover:underline">
+              ホーム
+            </Link>
           </li>
         </ol>
       </nav>
@@ -22,16 +25,22 @@ export function Breadcrumbs({ crumbs }: { crumbs?: Crumb[] }) {
       <ol className="flex items-center gap-1 flex-wrap">
         <li className="inline-flex items-center gap-1">
           <Home className="w-4 h-4 text-slate-400" />
-          <Link href="/" className="hover:underline">ホーム</Link>
+          <Link href={'/' as Route} className="hover:underline">
+            ホーム
+          </Link>
         </li>
         {crumbs.map((c, i) => {
           const last = i === crumbs.length - 1
           return (
             <li key={c.href} className={clsx('inline-flex items-center gap-1 max-w-[220px]')}>
               <ChevronRight className="w-4 h-4 text-slate-400" />
-              {last
-                ? <span className="font-medium text-slate-900 truncate">{c.label}</span>
-                : <Link href={c.href} className="hover:underline truncate">{c.label}</Link>}
+              {last ? (
+                <span className="font-medium text-slate-900 truncate">{c.label}</span>
+              ) : (
+                <Link href={c.href as Route} className="hover:underline truncate">
+                  {c.label}
+                </Link>
+              )}
             </li>
           )
         })}

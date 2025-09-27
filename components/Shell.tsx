@@ -340,6 +340,12 @@ const MODE_NAV_FALLBACK: Record<ViewId, ModeNavDefinition[]> = {
       params: { section: 'drafts' },
       icon: FilePenLine,
     },
+    {
+      path: '/playbooks/new',
+      label: '新規作成',
+      description: '対話式ウィザードでドラフト生成',
+      icon: Sparkles,
+    },
   ],
   settings: [
     {
@@ -357,7 +363,7 @@ const MODE_NAV_FALLBACK: Record<ViewId, ModeNavDefinition[]> = {
   ],
 }
 
-function createHrefWithView(
+export function createHrefWithView(
   path: string,
   sp: ReadonlyURLSearchParams | null,
   view: ViewId,
