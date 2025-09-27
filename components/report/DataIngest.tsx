@@ -7,12 +7,12 @@ import { DatasetInfo } from '@/types/report';
 const sampleDatasets = [
   {
     id: 'sample-csv',
-    label: 'Campaign Performance (CSV)',
+    label: '広告サマリー（CSV）',
     url: '/data/sample.csv',
   },
   {
     id: 'sample-parquet',
-    label: 'Campaign Performance (Parquet stub)',
+    label: '広告サマリー（Parquet）',
     url: '/data/sample.parquet',
   },
 ];
@@ -33,7 +33,7 @@ export const DataIngest = () => {
   const parseFileList = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     const [file] = Array.from(files);
-    dispatch({ type: 'addLog', message: `Importing ${file.name}…` });
+    dispatch({ type: 'addLog', message: `${file.name} をやさしく読み込みます…` });
     let dataset: DatasetInfo;
     if (file.name.endsWith('.csv')) {
       dataset = await client.loadCsvFile(file);
@@ -52,7 +52,7 @@ export const DataIngest = () => {
   };
 
   const onSelectSample = async (url: string, label: string) => {
-    dispatch({ type: 'addLog', message: `Loading ${label}` });
+    dispatch({ type: 'addLog', message: `${label} を読み込み中です。` });
     const dataset = await client.loadFromUrl(url, label);
     handleDatasetLoaded(dataset);
   };
@@ -65,8 +65,8 @@ export const DataIngest = () => {
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">1. Data Ingest</h2>
-          <p className="text-sm text-slate-500">Drag CSV/Parquet or pick a demo dataset.</p>
+          <h2 className="text-lg font-semibold">ファイルやサンプルを準備しましょう</h2>
+          <p className="text-sm text-slate-500">CSV / Parquet をそのままドラッグ＆ドロップ。サンプルもご利用いただけます。</p>
         </div>
         <div className="flex gap-2">
           {sampleDatasets.map((dataset) => (
@@ -93,13 +93,13 @@ export const DataIngest = () => {
         onClick={() => inputRef.current?.click()}
       >
         <input ref={inputRef} type="file" className="hidden" onChange={onFileChange} accept=".csv,.parquet,.pq" />
-        <p className="text-sm font-medium text-slate-700">Drop files or click to browse</p>
-        <p className="text-xs text-slate-500">CSV, Parquet (stub), Arrow table</p>
+        <p className="text-sm font-medium text-slate-700">ファイルをここにドロップ、またはクリックして選択</p>
+        <p className="text-xs text-slate-500">CSV / Parquet / Arrow (デモ) に対応しています</p>
       </div>
       <div className="mt-4">
-        <h3 className="text-xs font-semibold uppercase text-slate-500">Progress log</h3>
+        <h3 className="text-xs font-semibold uppercase text-slate-500">進行メモ</h3>
         <div className="mt-2 max-h-28 overflow-y-auto rounded-lg border border-slate-100 bg-slate-50 p-3 text-xs text-slate-600">
-          {logs.length === 0 && <p>No actions yet. Load a dataset to begin.</p>}
+          {logs.length === 0 && <p>まだ記録はありません。データを読み込むと状況がここに表示されます。</p>}
           {logs.map((log, index) => (
             <p key={`${log}-${index}`} className="mb-1 last:mb-0">
               {log}

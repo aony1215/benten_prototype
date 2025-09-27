@@ -30,8 +30,8 @@ export const ChartGrid = () => {
   }, [dataset, modelKey, runModel]);
 
   const title = model.measures.length
-    ? `${model.measures.map((measure) => measure.name).join(', ')} by ${model.dims.map((dim) => dim.name).join(', ') || 'All'}`
-    : 'Model Preview';
+    ? `${model.measures.map((measure) => measure.name).join('・')} × ${model.dims.map((dim) => dim.name).join('・') || '全体'}`
+    : 'プレビュー';
 
   const commentKey = `chart-${title}`;
 
@@ -39,11 +39,11 @@ export const ChartGrid = () => {
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">3. Chart Area</h2>
-          <p className="text-sm text-slate-500">Optimistic updates keep render latency under 500ms.</p>
+          <h2 className="text-lg font-semibold">グラフで傾向をやさしく確認</h2>
+          <p className="text-sm text-slate-500">結果は楽観的に先回り表示。体感レスポンス 0.5 秒以内を目指しています。</p>
         </div>
         <div className="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600">
-          {dataset ? dataset.name : 'No dataset loaded'}
+          {dataset ? `使用中: ${dataset.name}` : 'データセット未選択'}
         </div>
       </div>
       <div className="mt-6 grid gap-6 lg:grid-cols-1">

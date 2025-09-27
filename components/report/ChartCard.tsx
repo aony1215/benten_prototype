@@ -42,12 +42,12 @@ export const ChartCard = ({ title, result, comparison, loading, comment, onComme
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-base font-semibold text-slate-900">{title}</h3>
-          {loading && <p className="text-xs text-slate-500">Refreshing…</p>}
+          {loading && <p className="text-xs text-slate-500">最新の結果を反映しています…</p>}
         </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-3">
-          {currentSeries.length === 0 && !loading && <p className="text-sm text-slate-500">No data to visualize yet.</p>}
+          {currentSeries.length === 0 && !loading && <p className="text-sm text-slate-500">まだ表示できるデータがありません。</p>}
           {currentSeries.slice(0, 8).map((item, index) => (
             <div key={`${item.label}-${item.series}`} className="space-y-1">
               <div className="flex items-center justify-between text-xs font-medium text-slate-600">
@@ -87,13 +87,13 @@ export const ChartCard = ({ title, result, comparison, loading, comment, onComme
             ))
           ) : (
             <div className="rounded-lg border border-slate-100 bg-slate-50 p-4 text-xs text-slate-500">
-              Diff disabled — toggle to compare with previous run.
+              比較モードをオンにすると、ひとつ前の結果と並べて確認できます。
             </div>
           )}
         </div>
       </div>
       <div>
-        <h4 className="text-xs font-semibold uppercase text-slate-500">Tabular view</h4>
+        <h4 className="text-xs font-semibold uppercase text-slate-500">表形式で確認</h4>
         <div className="mt-2 overflow-x-auto rounded-xl border border-slate-100">
           <table className="min-w-full divide-y divide-slate-200 text-sm">
             <thead className="bg-slate-50 text-xs uppercase text-slate-500">
@@ -122,12 +122,12 @@ export const ChartCard = ({ title, result, comparison, loading, comment, onComme
         </div>
       </div>
       <div>
-        <h4 className="text-xs font-semibold uppercase text-slate-500">Commentary</h4>
+        <h4 className="text-xs font-semibold uppercase text-slate-500">ひとことメモ</h4>
         <textarea
           value={comment ?? ''}
           onChange={(event) => onCommentChange?.(event.target.value)}
           className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700 focus:border-slate-900 focus:outline-none"
-          placeholder="Capture insights, risks, and next steps. Local only for MVP."
+          placeholder="気づきや共有したいメッセージをどうぞ（この端末だけに保存されます）。"
           rows={3}
         />
       </div>

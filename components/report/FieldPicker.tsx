@@ -38,14 +38,14 @@ export const FieldPicker = () => {
       if (!model.dims.some((dim) => dim.name === item.name)) {
         const next = { ...model, dims: [...model.dims, { name: item.name }] };
         setModel(next);
-        dispatch({ type: 'addLog', message: `Dimension added: ${item.name}` });
+        dispatch({ type: 'addLog', message: `ディメンション「${item.name}」を追加しました。` });
       }
     }
     if (target === 'measures' && item.type === 'measure') {
       if (!model.measures.some((measure) => measure.name === item.name)) {
         const next = { ...model, measures: [...model.measures, { name: item.name, agg: 'sum' as const }] };
         setModel(next);
-        dispatch({ type: 'addLog', message: `Measure added: ${item.name}` });
+        dispatch({ type: 'addLog', message: `指標「${item.name}」を追加しました。` });
       }
     }
   };
@@ -60,10 +60,10 @@ export const FieldPicker = () => {
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-lg font-semibold">2. Field Picker</h2>
+      <h2 className="text-lg font-semibold">見たい軸と指標を選びましょう</h2>
       <div className="mt-4 flex flex-col gap-4 lg:flex-row">
         <div className="flex-1">
-          <h3 className="text-xs font-semibold uppercase text-slate-500">Available Dimensions</h3>
+          <h3 className="text-xs font-semibold uppercase text-slate-500">利用できるディメンション</h3>
           <div className="mt-2 flex flex-wrap gap-2">
             {dimensions.map((field) => (
               <div
@@ -75,9 +75,9 @@ export const FieldPicker = () => {
                 {field.name}
               </div>
             ))}
-            {dimensions.length === 0 && <span className="text-xs text-slate-400">Load a dataset to unlock dimensions.</span>}
+            {dimensions.length === 0 && <span className="text-xs text-slate-400">データを読み込むと候補が表示されます。</span>}
           </div>
-          <h3 className="mt-6 text-xs font-semibold uppercase text-slate-500">Available Measures</h3>
+          <h3 className="mt-6 text-xs font-semibold uppercase text-slate-500">利用できる指標</h3>
           <div className="mt-2 flex flex-wrap gap-2">
             {measures.map((field) => (
               <div
@@ -89,18 +89,18 @@ export const FieldPicker = () => {
                 {field.name}
               </div>
             ))}
-            {measures.length === 0 && <span className="text-xs text-slate-400">Import metrics to start measuring.</span>}
+            {measures.length === 0 && <span className="text-xs text-slate-400">指標はデータを読み込むと選べます。</span>}
           </div>
         </div>
         <div className="flex flex-1 flex-col gap-4">
           <div>
-            <h3 className="text-xs font-semibold uppercase text-slate-500">Dimensions</h3>
+            <h3 className="text-xs font-semibold uppercase text-slate-500">選択中のディメンション</h3>
             <div
               className={dropZoneBase}
               onDragOver={(event) => event.preventDefault()}
               onDrop={(event) => handleDrop(event, 'dims')}
             >
-              {model.dims.length === 0 && <span>Drag dimensions here</span>}
+              {model.dims.length === 0 && <span>ここにディメンションをドラッグしてください</span>}
               {model.dims.map((dim) => (
                 <button key={dim.name} className={pillClass} onClick={() => removeField(dim.name, 'dimension')}>
                   {dim.name}
@@ -110,13 +110,13 @@ export const FieldPicker = () => {
             </div>
           </div>
           <div>
-            <h3 className="text-xs font-semibold uppercase text-slate-500">Measures</h3>
+            <h3 className="text-xs font-semibold uppercase text-slate-500">選択中の指標</h3>
             <div
               className={dropZoneBase}
               onDragOver={(event) => event.preventDefault()}
               onDrop={(event) => handleDrop(event, 'measures')}
             >
-              {model.measures.length === 0 && <span>Drag measures here</span>}
+              {model.measures.length === 0 && <span>ここに指標をドラッグしてください</span>}
               {model.measures.map((measure) => (
                 <button key={measure.name} className={pillClass} onClick={() => removeField(measure.name, 'measure')}>
                   {measure.name} <span className="text-slate-400">×</span>

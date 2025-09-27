@@ -4,8 +4,7 @@ import { useMemo } from 'react';
 import { useReportStore } from '@/store/reportStore';
 import { ReportPurpose } from '@/types/report';
 import clsx from 'clsx';
-
-const steps = ['Ingest', 'Fields', 'Visualize', 'Tips', 'Output'];
+import { reportSteps } from '@/lib/report/steps';
 
 const purposeTokens: Record<ReportPurpose, string> = {
   QBR: 'from-indigo-400 to-indigo-600',
@@ -13,9 +12,15 @@ const purposeTokens: Record<ReportPurpose, string> = {
   Incident: 'from-amber-400 to-rose-500',
 };
 
+const purposeLabels: Record<ReportPurpose, string> = {
+  QBR: '四半期レビュー',
+  Proposal: '提案づくり',
+  Incident: 'インシデント対応',
+};
+
 export const ReportHeader = () => {
   const {
-    state: { purpose, diffMode, isRunning },
+    state: { purpose, diffMode, isRunning, activeStep },
     dispatch,
     runModel,
   } = useReportStore();
@@ -24,7 +29,10 @@ export const ReportHeader = () => {
 
   const updatePurpose = (next: ReportPurpose) => {
     dispatch({ type: 'setPurpose', purpose: next });
-    dispatch({ type: 'addLog', message: `Purpose switched to ${next}` });
+    dispatch({
+      type: 'addLog',
+      message: `レポート目的を「${purposeLabels[next]}」に切り替えました。`,
+    });
     runModel();
   };
 
@@ -33,8 +41,8 @@ export const ReportHeader = () => {
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold">Immersive Report Builder</h1>
-            <p className="text-sm text-slate-500">Assemble ingest → analyze → output in minutes.</p>
+            <h1 className="text-2xl font-semibold">やさしいレポートづくりウィザード</h1>
+            <p className="text-sm text-slate-500">取り込みから共有まで、ひと息で伴走します。</p>
           </div>
           <div className="flex items-center gap-2">
             {(['QBR', 'Proposal', 'Incident'] as ReportPurpose[]).map((token) => (
@@ -48,7 +56,7 @@ export const ReportHeader = () => {
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 )}
               >
-                {token}
+                {purposeLabels[token]}
               </button>
             ))}
             <button
@@ -58,28 +66,42 @@ export const ReportHeader = () => {
                 diffMode ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700'
               )}
             >
-              {diffMode ? 'Diff ON' : 'Diff OFF'}
+              {diffMode ? '比較モード: ON' : '比較モード: OFF'}
             </button>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          {steps.map((step, idx) => (
-            <div key={step} className="flex items-center gap-2 text-sm text-slate-600">
-              <div
-                className={clsx(
-                  'flex h-8 w-8 items-center justify-center rounded-full border text-xs font-semibold shadow-sm',
-                  `bg-gradient-to-br ${gradient} text-white`
-                )}
+        <div className="flex flex-wrap items-center gap-4">
+          {reportSteps.map((step, idx) => {
+            const isActive = step.id === activeStep;
+            return (
+              <button
+                key={step.id}
+                type="button"
+                onClick={() => dispatch({ type: 'setStep', step: step.id })}
+                className="group flex max-w-xs flex-1 items-center gap-3 rounded-2xl border border-transparent px-2 py-2 text-left transition hover:border-slate-200"
               >
-                {idx + 1}
-              </div>
-              <span className="whitespace-nowrap">{step}</span>
-              {idx < steps.length - 1 && <div className="h-px w-12 bg-slate-200" />}
-            </div>
-          ))}
+                <div
+                  className={clsx(
+                    'flex h-8 w-8 items-center justify-center rounded-full border text-xs font-semibold shadow-sm transition',
+                    isActive
+                      ? `bg-gradient-to-br ${gradient} text-white`
+                      : 'bg-white text-slate-500'
+                  )}
+                >
+                  {idx + 1}
+                </div>
+                <div className="flex flex-col">
+                  <span className={clsx('text-sm', isActive ? 'font-semibold text-slate-900' : 'text-slate-600')}>
+                    {step.title}
+                  </span>
+                  <span className="text-xs text-slate-400">{step.subtitle}</span>
+                </div>
+              </button>
+            );
+          })}
           <div className="ml-auto flex items-center gap-2 text-xs text-slate-500">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            {isRunning ? 'Running query…' : 'Live'}
+            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+            {isRunning ? '集計中…' : '即時反映'}
           </div>
         </div>
       </div>

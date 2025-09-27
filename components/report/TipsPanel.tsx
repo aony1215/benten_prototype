@@ -2,6 +2,13 @@
 
 import { useMemo } from 'react';
 import { useReportStore } from '@/store/reportStore';
+import { ReportPurpose } from '@/types/report';
+
+const purposeLabels: Record<ReportPurpose, string> = {
+  QBR: '四半期レビュー',
+  Proposal: '提案づくり',
+  Incident: 'インシデント対応',
+};
 
 export const TipsPanel = () => {
   const {
@@ -29,15 +36,15 @@ export const TipsPanel = () => {
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">4. Tips (虎の巻)</h2>
-          <p className="text-sm text-slate-500">Rule-based helpers adapt to purpose, KPIs, and dimensions.</p>
+          <h2 className="text-lg font-semibold">おすすめのヒント（虎の巻）</h2>
+          <p className="text-sm text-slate-500">レポートの目的と選んだ指標に合わせて、次の一手をそっとご提案します。</p>
         </div>
         <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600">
-          Purpose: {purpose}
+          モード: {purposeLabels[purpose]}
         </span>
       </div>
       <div className="mt-4">
-        <h3 className="text-xs font-semibold uppercase text-slate-500">Focus KPIs</h3>
+        <h3 className="text-xs font-semibold uppercase text-slate-500">注目したい KPI</h3>
         <div className="mt-2 flex flex-wrap gap-2">
           {kpis.map((kpi) => {
             const active = kpiSelections.includes(kpi.id);
@@ -58,7 +65,7 @@ export const TipsPanel = () => {
       <div className="mt-6 space-y-4">
         {Object.entries(groupedTips).map(([group, groupTips]) => (
           <div key={group} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-            <h4 className="text-xs font-semibold uppercase text-slate-500">{group === 'general' ? 'General' : group}</h4>
+            <h4 className="text-xs font-semibold uppercase text-slate-500">{group === 'general' ? '全体へのヒント' : group}</h4>
             <div className="mt-3 space-y-3">
               {groupTips.map((tip) => (
                 <div
@@ -67,13 +74,13 @@ export const TipsPanel = () => {
                 >
                   <div>
                     <p className="font-medium">{tip.suggest.label}</p>
-                    <p className="text-xs text-slate-500">Action: {tip.suggest.action}</p>
+                    <p className="text-xs text-slate-500">アクション: {tip.suggest.action}</p>
                   </div>
                   <button
                     onClick={() => applyTip(tip)}
                     className="rounded-full border border-slate-900 px-3 py-1 text-xs font-semibold text-slate-900 hover:bg-slate-900 hover:text-white"
                   >
-                    Apply
+                    反映する
                   </button>
                 </div>
               ))}
@@ -82,7 +89,7 @@ export const TipsPanel = () => {
         ))}
         {tips.length === 0 && (
           <div className="rounded-2xl border border-slate-100 bg-slate-50 p-6 text-sm text-slate-500">
-            Load a dataset and select KPIs to surface tailored tips.
+            データとKPIを選ぶと、ぴったりのヒントがここに届きます。
           </div>
         )}
       </div>

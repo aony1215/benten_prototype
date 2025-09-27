@@ -74,3 +74,5 @@ export interface RunContext {
   model: DnDModel;
   kpiIds: string[];
 }
+
+export type ReportStepId = 'ingest' | 'fields' | 'visualize' | 'tips' | 'output';

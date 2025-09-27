@@ -10,6 +10,7 @@ import {
   KpiDef,
   TipRule,
   RunContext,
+  ReportStepId,
 } from '@/types/report';
 import { DuckClient, getDuckClient } from '@/lib/duck/client';
 
@@ -34,6 +35,7 @@ interface ReportState {
   client: DuckClient;
   kpis: KpiDef[];
   tipRules: TipRule[];
+  activeStep: ReportStepId;
 }
 
 const initialModel: DnDModel = {
@@ -52,6 +54,18 @@ const cloneModel = (model: DnDModel): DnDModel => ({
   limit: model.limit,
 });
 
+const resolveInitialStep = (client: DuckClient): ReportStepId => {
+  const dataset = client.getDataset();
+  if (!dataset) {
+    return 'ingest';
+  }
+  const meta = client.getRunMeta();
+  if (meta?.model?.measures?.length || meta?.model?.dims?.length) {
+    return 'visualize';
+  }
+  return 'fields';
+};
+
 const initialState = (client: DuckClient, kpis: KpiDef[], tipRules: TipRule[]): ReportState => ({
   dataset: client.getDataset(),
   model: client.getRunMeta()?.model ? cloneModel(client.getRunMeta()!.model) : cloneModel(initialModel),
@@ -68,6 +82,7 @@ const initialState = (client: DuckClient, kpis: KpiDef[], tipRules: TipRule[]): 
   client,
   kpis,
   tipRules,
+  activeStep: resolveInitialStep(client),
 });
 
 type Action =
@@ -81,7 +96,8 @@ type Action =
   | { type: 'setTips'; tips: TipMatch[] }
   | { type: 'setKpiSelections'; ids: string[] }
   | { type: 'updateComments'; id: string; text: string }
-  | { type: 'setAvailableFields'; fields: FieldDefinition[] };
+  | { type: 'setAvailableFields'; fields: FieldDefinition[] }
+  | { type: 'setStep'; step: ReportStepId };
 
 const reducer = (state: ReportState, action: Action): ReportState => {
   switch (action.type) {
@@ -90,7 +106,8 @@ const reducer = (state: ReportState, action: Action): ReportState => {
         ...state,
         dataset: action.dataset,
         availableFields: action.dataset.columns,
-        logs: [...state.logs, `Dataset loaded (${action.dataset.name})`],
+        logs: [...state.logs, `データセット「${action.dataset.name}」を読み込みました。`],
+        activeStep: 'fields',
       };
     case 'setPurpose':
       return {
@@ -101,6 +118,7 @@ const reducer = (state: ReportState, action: Action): ReportState => {
       return {
         ...state,
         model: action.model,
+        activeStep: state.activeStep === 'ingest' ? 'fields' : state.activeStep,
       };
     case 'setResult':
       return {
@@ -108,6 +126,7 @@ const reducer = (state: ReportState, action: Action): ReportState => {
         result: action.result,
         previousResult: action.previous ?? state.previousResult,
         isRunning: false,
+        activeStep: state.activeStep === 'fields' ? 'visualize' : state.activeStep,
       };
     case 'toggleDiff':
       return {
@@ -143,6 +162,11 @@ const reducer = (state: ReportState, action: Action): ReportState => {
       return {
         ...state,
         availableFields: action.fields,
+      };
+    case 'setStep':
+      return {
+        ...state,
+        activeStep: action.step,
       };
     default:
       return state;
@@ -182,7 +206,7 @@ export const ReportProvider = ({
   const setModel = useCallback(
     (model: DnDModel) => {
       dispatch({ type: 'setModel', model });
-      dispatch({ type: 'addLog', message: 'Model updated' });
+      dispatch({ type: 'addLog', message: '分析モデルを更新しました。' });
     },
     [dispatch]
   );
@@ -192,11 +216,11 @@ export const ReportProvider = ({
       const snapshot = stateRef.current;
       const model = nextModel ?? snapshot.model;
       if (!snapshot.dataset) {
-        dispatch({ type: 'addLog', message: 'No dataset selected' });
+        dispatch({ type: 'addLog', message: '先にデータを読み込んでください。' });
         return;
       }
       dispatch({ type: 'setRunning', running: true });
-      dispatch({ type: 'addLog', message: 'Running query...' });
+      dispatch({ type: 'addLog', message: 'クエリを実行しています…' });
       await new Promise((resolve) => setTimeout(resolve, 120));
       const result = snapshot.client.run(model, snapshot.purpose);
       const previous = snapshot.client.getPreviousResult();
@@ -209,7 +233,7 @@ export const ReportProvider = ({
       };
       const tips = snapshot.client.getTips(context);
       dispatch({ type: 'setTips', tips });
-      dispatch({ type: 'addLog', message: 'Query finished' });
+      dispatch({ type: 'addLog', message: 'クエリが完了しました。' });
     },
     [dispatch]
   );
