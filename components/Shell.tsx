@@ -17,11 +17,13 @@ import {
   Info,
   Landmark,
   Layers,
+  Menu,
   MessageSquare,
   Sparkles,
   Target,
   User,
   Users2,
+  X,
 } from 'lucide-react'
 import { resolveViewHome, useCurrentView, VIEWS, type ViewId } from '@/components/ViewSwitch'
 
@@ -1606,7 +1608,136 @@ export function Shell({ children, crumbs }: { children: React.ReactNode; crumbs?
     activeSection,
     selection,
   } = useNav(crumbs)
-  const totalRailWidth = ICON_RAIL_WIDTH + (hasMenu ? DEFAULT_MENU_WIDTH : 0)
+  const [isMobileNavOpen, setIsMobileNavOpen] = React.useState(false)
+  const mobileDrawerRef = React.useRef<HTMLDivElement | null>(null)
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const searchParamsString = React.useMemo(() => searchParams?.toString() ?? '', [searchParams])
+  const totalRailWidthClass = hasMenu ? 'md:ml-[400px]' : 'md:ml-20'
+  const asideWidthClass = hasMenu ? 'md:w-[400px]' : 'md:w-20'
+
+  React.useEffect(() => {
+    if (!isMobileNavOpen) {
+      return
+    }
+
+    const drawer = mobileDrawerRef.current
+    if (!drawer) {
+      return
+    }
+
+    const previouslyFocused = document.activeElement as HTMLElement | null
+    const focusableSelector =
+      'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+    const focusableElements = Array.from(
+      drawer.querySelectorAll<HTMLElement>(focusableSelector),
+    ).filter(element => !element.hasAttribute('disabled') && !element.getAttribute('aria-hidden'))
+    const firstElement = focusableElements[0] ?? drawer
+    const lastElement = focusableElements[focusableElements.length - 1] ?? drawer
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!drawer.contains(event.target as Node)) {
+        return
+      }
+
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setIsMobileNavOpen(false)
+        return
+      }
+
+      if (event.key !== 'Tab') {
+        return
+      }
+
+      if (focusableElements.length === 0) {
+        event.preventDefault()
+        return
+      }
+
+      if (event.shiftKey) {
+        if (document.activeElement === firstElement) {
+          event.preventDefault()
+          lastElement.focus()
+        }
+        return
+      }
+
+      if (document.activeElement === lastElement) {
+        event.preventDefault()
+        firstElement.focus()
+      }
+    }
+
+    document.body.style.setProperty('overflow', 'hidden')
+    firstElement.focus({ preventScroll: true })
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      previouslyFocused?.focus?.({ preventScroll: true })
+      document.body.style.removeProperty('overflow')
+    }
+  }, [isMobileNavOpen])
+
+  React.useEffect(() => {
+    setIsMobileNavOpen(false)
+  }, [pathname, searchParamsString])
+
+  const navigationList = (
+    <div className="flex-1 space-y-6 overflow-y-auto px-4 py-4">
+      {navigationSections.map(section => (
+        <section key={section.id} className="space-y-3">
+          <div className="space-y-1">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">{section.title}</h2>
+            {section.description ? (
+              <p className="text-sm text-slate-600">{section.description}</p>
+            ) : null}
+          </div>
+          <div className="space-y-2">
+            {section.items.map(item => {
+              const Icon = item.icon
+              const keySuffix = item.params
+                ? Object.entries(item.params)
+                    .map(([k, v]) => `${k}:${v}`)
+                    .join('|')
+                : 'root'
+              return (
+                <Link
+                  key={`${item.path}-${keySuffix}`}
+                  href={item.href}
+                  aria-current={item.isActive ? 'page' : undefined}
+                  className={clsx(
+                    'group flex items-start gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200',
+                    item.isActive
+                      ? 'border-indigo-200 bg-indigo-50 text-indigo-700 shadow-sm'
+                      : 'hover:border-indigo-200 hover:bg-indigo-50/70 hover:text-indigo-700',
+                  )}
+                >
+                  <span
+                    className={clsx(
+                      'mt-0.5 grid h-9 w-9 place-items-center rounded-xl border border-transparent bg-slate-100 text-slate-600 transition-colors duration-150',
+                      item.isActive
+                        ? 'border-indigo-200 bg-indigo-600 text-white shadow-sm'
+                        : 'group-hover:bg-indigo-100 group-hover:text-indigo-700',
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <span className="flex-1">
+                    <span className="block text-sm font-semibold leading-tight">{item.label}</span>
+                    {item.description ? (
+                      <span className="mt-1 block text-xs text-slate-500">{item.description}</span>
+                    ) : null}
+                  </span>
+                </Link>
+              )
+            })}
+          </div>
+        </section>
+      ))}
+    </div>
+  )
 
   return (
     <HierarchyStateContext.Provider
@@ -1614,8 +1745,10 @@ export function Shell({ children, crumbs }: { children: React.ReactNode; crumbs?
     >
       <div className="min-h-screen bg-slate-50 text-slate-900">
         <aside
-          className="fixed inset-y-0 left-0 z-40 flex border-r border-slate-200 bg-white shadow-sm"
-          style={{ width: totalRailWidth }}
+          className={clsx(
+            'fixed inset-y-0 left-0 z-40 flex w-0 overflow-hidden border-r border-slate-200 bg-white shadow-sm transition-[width] duration-200 md:w-20',
+            asideWidthClass,
+          )}
         >
           <div className="flex w-20 flex-col border-r border-slate-100 bg-white">
             <div className="flex h-14 items-center justify-center border-b border-slate-100">
@@ -1645,73 +1778,78 @@ export function Shell({ children, crumbs }: { children: React.ReactNode; crumbs?
           </div>
           <div
             className={clsx(
-              'flex h-full flex-1 flex-col transition-opacity duration-200',
+              'hidden h-full flex-1 flex-col transition-opacity duration-200 md:flex',
               hasMenu ? 'opacity-100' : 'pointer-events-none opacity-0',
             )}
-            style={{ width: hasMenu ? DEFAULT_MENU_WIDTH : 0 }}
           >
-            <div className="flex h-full flex-col overflow-hidden border-l border-slate-100 bg-white">
+            <div
+              className={clsx(
+                'flex h-full flex-col overflow-hidden border-l border-slate-100 bg-white transition-[width] duration-200',
+                hasMenu ? 'md:w-[320px]' : 'md:w-0',
+              )}
+            >
               <div className="border-b border-slate-100 px-5 py-4">
                 <Breadcrumbs crumbs={breadcrumbs} />
               </div>
-              <div className="flex-1 space-y-6 overflow-y-auto px-4 py-4">
-                {navigationSections.map(section => (
-                  <section key={section.id} className="space-y-3">
-                    <div className="space-y-1">
-                      <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">{section.title}</h2>
-                      {section.description ? (
-                        <p className="text-sm text-slate-600">{section.description}</p>
-                      ) : null}
-                    </div>
-                    <div className="space-y-2">
-                      {section.items.map(item => {
-                        const Icon = item.icon
-                        const keySuffix = item.params
-                          ? Object.entries(item.params)
-                              .map(([k, v]) => `${k}:${v}`)
-                              .join('|')
-                          : 'root'
-                        return (
-                          <Link
-                            key={`${item.path}-${keySuffix}`}
-                            href={item.href}
-                            aria-current={item.isActive ? 'page' : undefined}
-                            className={clsx(
-                              'group flex items-start gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200',
-                              item.isActive
-                                ? 'border-indigo-200 bg-indigo-50 text-indigo-700 shadow-sm'
-                                : 'hover:border-indigo-200 hover:bg-indigo-50/70 hover:text-indigo-700',
-                            )}
-                          >
-                            <span
-                              className={clsx(
-                                'mt-0.5 grid h-9 w-9 place-items-center rounded-xl border border-transparent bg-slate-100 text-slate-600 transition-colors duration-150',
-                                item.isActive
-                                  ? 'border-indigo-200 bg-indigo-600 text-white shadow-sm'
-                                  : 'group-hover:bg-indigo-100 group-hover:text-indigo-700',
-                              )}
-                            >
-                              <Icon className="h-4 w-4" />
-                            </span>
-                            <span className="flex-1">
-                              <span className="block text-sm font-semibold leading-tight">{item.label}</span>
-                              {item.description ? (
-                                <span className="mt-1 block text-xs text-slate-500">{item.description}</span>
-                              ) : null}
-                            </span>
-                          </Link>
-                        )
-                      })}
-                    </div>
-                  </section>
-                ))}
-              </div>
+              {navigationList}
             </div>
           </div>
         </aside>
-        <div className="min-h-screen" style={{ marginLeft: totalRailWidth }}>
+        <div className={clsx('min-h-screen transition-[margin] duration-200', totalRailWidthClass)}>
+          <div className="border-b border-slate-200 bg-white px-4 py-3 md:hidden">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsMobileNavOpen(true)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200"
+                aria-expanded={isMobileNavOpen}
+                aria-controls="mobile-navigation"
+              >
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">ナビゲーションを開く</span>
+              </button>
+              <div className="flex-1 overflow-hidden">
+                <Breadcrumbs crumbs={breadcrumbs} />
+              </div>
+            </div>
+          </div>
           <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
         </div>
+        {isMobileNavOpen ? (
+          <div
+            className="fixed inset-0 z-50 flex bg-slate-900/40 backdrop-blur-sm md:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mobile-navigation-heading"
+            onClick={() => setIsMobileNavOpen(false)}
+          >
+            <div
+              ref={mobileDrawerRef}
+              id="mobile-navigation"
+              tabIndex={-1}
+              className="ml-auto flex h-full w-full max-w-[320px] flex-col bg-white shadow-xl focus-visible:outline-none"
+              onClick={event => event.stopPropagation()}
+            >
+              <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4">
+                <h2 id="mobile-navigation-heading" className="sr-only">
+                  ナビゲーション
+                </h2>
+                <div className="flex-1 overflow-hidden">
+                  <Breadcrumbs crumbs={breadcrumbs} />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsMobileNavOpen(false)}
+                  className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition-colors duration-150 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200"
+                >
+                  <X className="h-5 w-5" />
+                  <span className="sr-only">ナビゲーションを閉じる</span>
+                </button>
+              </div>
+              {navigationList}
+            </div>
+          </div>
+        ) : null}
       </div>
     </HierarchyStateContext.Provider>
   )
